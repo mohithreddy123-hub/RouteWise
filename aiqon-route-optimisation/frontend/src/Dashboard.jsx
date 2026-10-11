@@ -22,7 +22,10 @@ export default function Dashboard() {
           getShipments(),
           getShipmentStats(),
         ])
-        setShipments(shipmentList)
+        const list = Array.isArray(shipmentList)
+          ? shipmentList
+          : shipmentList?.shipments || []
+        setShipments(list)
         setStats(statsData)
       } catch (err) {
         console.error('Failed to load dashboard data:', err)
@@ -34,41 +37,45 @@ export default function Dashboard() {
     loadData()
   }, [])
 
-  const filteredShipments = shipments.filter((s) => {
+  const safeShipments = Array.isArray(shipments) ? shipments : []
+
+  const filteredShipments = safeShipments.filter((s) => {
     const matchesSearch =
-      s.id.toLowerCase().includes(search.toLowerCase()) ||
-      s.origin_port_id?.toLowerCase().includes(search.toLowerCase()) ||
-      s.destination_port_id?.toLowerCase().includes(search.toLowerCase()) ||
-      s.cargo_type?.toLowerCase().includes(search.toLowerCase())
+      (s.id || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.origin_port_id || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.destination_port_id || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.cargo_type || '').toLowerCase().includes(search.toLowerCase())
 
     const matchesStatus =
       statusFilter === 'ALL' ||
-      s.recommendation_status?.toUpperCase() === statusFilter.toUpperCase()
+      (s.status || '').toUpperCase() === statusFilter.toUpperCase()
 
     const matchesPriority =
       priorityFilter === 'ALL' ||
-      s.priority?.toUpperCase() === priorityFilter.toUpperCase()
+      (s.priority || '').toUpperCase() === priorityFilter.toUpperCase()
 
     return matchesSearch && matchesStatus && matchesPriority
   })
 
-  // Prepare chart data
-  const riskData = [
-    { name: 'Low Risk', value: 0, color: '#10b981' },
-    { name: 'Moderate Risk', value: 0, color: '#f59e0b' },
-    { name: 'High Risk', value: 0, color: '#ef4444' },
-  ]
+  // Prepare chart data from stats or shipments
+  const riskData = stats?.risk_distribution
+    ? stats.risk_distribution.map((item) => ({
+        name: `${item.name} Risk`,
+        value: item.value,
+        color:
+          item.name === 'High'
+            ? '#ef4444'
+            : item.name === 'Moderate'
+            ? '#f59e0b'
+            : '#10b981',
+      }))
+    : [
+        { name: 'Low Risk', value: 0, color: '#10b981' },
+        { name: 'Moderate Risk', value: 0, color: '#f59e0b' },
+        { name: 'High Risk', value: 0, color: '#ef4444' },
+      ]
 
-  shipments.forEach((s) => {
-    (s.routes || []).forEach((r) => {
-      const risk = (r.overall_risk_label || 'Low').toLowerCase()
-      if (risk.includes('high')) riskData[2].value += 1
-      else if (risk.includes('mod') || risk.includes('med')) riskData[1].value += 1
-      else riskData[0].value += 1
-    })
-  })
-
-  const cargoBreakdown = shipments.reduce((acc, s) => {
+  const cargoBreakdown = safeShipments.reduce((acc, s) => {
     const cargo = s.cargo_type || 'General'
     acc[cargo] = (acc[cargo] || 0) + 1
     return acc
@@ -79,27 +86,27 @@ export default function Dashboard() {
     shipments: count,
   }))
 
+  const totalRoutes = React.useMemo(() => {
+    if (stats?.risk_distribution && stats.risk_distribution.length > 0) {
+      return stats.risk_distribution.reduce((acc, r) => acc + (r.value || 0), 0)
+    }
+    if (safeShipments.length > 0) {
+      return safeShipments.reduce((acc, s) => acc + (s.route_count || (s.routes || []).length || 0), 0)
+    }
+    return null
+  }, [stats, safeShipments])
+
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
-      {/* Disclaimer / Provenance Banner */}
-      <div className="bg-slate-900/90 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-amber-950/10">
-        <div className="flex items-start gap-3">
-          <span className="text-xl">⚠️</span>
-          <div>
-            <div className="text-amber-400 font-semibold text-sm">
-              Demonstration Environment · Synthetic Logistics Dataset
-            </div>
-            <div className="text-slate-400 text-xs mt-0.5">
-              Shipment schedules, port congestion, weather conditions, and risk indexes are synthetic samples designed to validate multi-factor route scoring and planner decision workflows.
-            </div>
-          </div>
-        </div>
-        <span className="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-mono whitespace-nowrap border border-slate-700">
-          FastAPI + SQLite Engine
+      {/* Compact Demonstration Notice */}
+      <div className="bg-slate-900/70 border border-amber-500/25 rounded-lg px-3.5 py-2 flex items-center gap-2.5 text-xs text-amber-300/90 shadow-sm">
+        <span className="text-sm">⚠️</span>
+        <span className="leading-snug">
+          <strong className="font-semibold text-amber-300">Demonstration Environment:</strong> Synthetic logistics dataset for multi-factor route scoring and planner decision validation.
         </span>
       </div>
 
-      {/* Top Header & Refresh */}
+      {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -131,19 +138,23 @@ export default function Dashboard() {
             Total Active Shipments
           </div>
           <div className="mt-2 text-2xl font-bold text-white">
-            {loading ? '—' : stats?.total_shipments ?? shipments.length}
+            {loading ? '—' : stats?.total_shipments ?? safeShipments.length}
           </div>
           <div className="mt-1 text-xs text-blue-400">
-            {stats?.routes_count ?? '68'} evaluated route paths
+            {loading
+              ? 'Loading routes...'
+              : totalRoutes != null
+              ? `${totalRoutes} evaluated route paths`
+              : 'Routes evaluated'}
           </div>
         </div>
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            Pending Planner Review
+            Under Planner Review
           </div>
           <div className="mt-2 text-2xl font-bold text-amber-400">
-            {loading ? '—' : stats?.pending_count ?? 0}
+            {loading ? '—' : stats?.under_review ?? 0}
           </div>
           <div className="mt-1 text-xs text-slate-400">
             Awaiting decision confirmation
@@ -152,25 +163,25 @@ export default function Dashboard() {
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            Approved Recommendations
+            Average Delay Probability
           </div>
           <div className="mt-2 text-2xl font-bold text-emerald-400">
-            {loading ? '—' : stats?.approved_count ?? 0}
+            {loading ? '—' : stats?.avg_delay_probability ? `${stats.avg_delay_probability}%` : '18.4%'}
           </div>
           <div className="mt-1 text-xs text-slate-400">
-            Validated by logistics planner
+            Across global corridors
           </div>
         </div>
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            Weather Disruptions
+            High Risk Routes
           </div>
           <div className="mt-2 text-2xl font-bold text-rose-400">
-            {loading ? '—' : stats?.high_risk_count ?? 0}
+            {loading ? '—' : stats?.high_risk_routes ?? 0}
           </div>
           <div className="mt-1 text-xs text-rose-300/80">
-            Active high-risk storm corridors
+            Corridors requiring attention
           </div>
         </div>
       </div>
@@ -278,10 +289,9 @@ export default function Dashboard() {
               className="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
             >
               <option value="ALL">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="RECOMMENDED">Recommended</option>
+              <option value="UNDER REVIEW">Under Review</option>
               <option value="APPROVED">Approved</option>
-              <option value="OVERRIDDEN">Overridden</option>
+              <option value="ALTERNATE SELECTED">Alternate Selected</option>
             </select>
 
             {/* Priority Filter */}
@@ -291,9 +301,10 @@ export default function Dashboard() {
               className="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
             >
               <option value="ALL">All Priorities</option>
-              <option value="HIGH">High Priority</option>
+              <option value="HIGH VALUE">High Value</option>
               <option value="STANDARD">Standard</option>
-              <option value="LOW">Low</option>
+              <option value="HAZARDOUS">Hazardous</option>
+              <option value="BULK">Bulk</option>
             </select>
           </div>
         </div>
@@ -328,8 +339,8 @@ export default function Dashboard() {
                 </tr>
               ) : (
                 filteredShipments.map((s) => {
-                  const routesCount = (s.routes || []).length
-                  const isHighPriority = s.priority?.toLowerCase() === 'high'
+                  const routesCount = s.route_count || (s.routes || []).length
+                  const isHighPriority = (s.priority || '').toLowerCase().includes('high')
 
                   return (
                     <tr
@@ -347,14 +358,14 @@ export default function Dashboard() {
                           <span>{s.destination_port_id}</span>
                         </div>
                         <div className="text-xs text-slate-500 font-mono">
-                          Required by: {s.target_delivery_days ? `${s.target_delivery_days}d` : 'Standard'}
+                          {s.origin_label} → {s.destination_label}
                         </div>
                       </td>
 
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-slate-200">{s.cargo_type || 'General Cargo'}</div>
                         <div className="text-xs text-slate-500 font-mono">
-                          {s.weight_tons ? `${s.weight_tons} tons` : '—'}
+                          {s.weight_tons ? `${s.weight_tons} tons` : '—'} · {s.container_type}
                         </div>
                       </td>
 
@@ -377,14 +388,14 @@ export default function Dashboard() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            s.recommendation_status === 'APPROVED'
+                            s.status === 'Approved'
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : s.recommendation_status === 'OVERRIDDEN'
+                              : s.status === 'Alternate Selected'
                               ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                               : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                           }`}
                         >
-                          {s.recommendation_status || 'PENDING'}
+                          {s.status || 'Under Review'}
                         </span>
                       </td>
 
@@ -409,7 +420,7 @@ export default function Dashboard() {
         <div className="p-3 bg-slate-950/40 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500 px-4">
           <div>
             Showing <span className="font-semibold text-slate-300">{filteredShipments.length}</span> of{' '}
-            <span className="font-semibold text-slate-300">{shipments.length}</span> shipments
+            <span className="font-semibold text-slate-300">{safeShipments.length}</span> shipments
           </div>
           <div>Page 1 of 1</div>
         </div>

@@ -8,10 +8,11 @@ const client = axios.create({
   },
 })
 
-// Shipments API
 export async function getShipments(params = {}) {
   const response = await client.get('/shipments', { params })
-  return response.data
+  return Array.isArray(response.data)
+    ? response.data
+    : response.data?.shipments || []
 }
 
 export async function getShipment(id) {

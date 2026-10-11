@@ -274,6 +274,27 @@ export default function ShipmentAnalysis() {
     }
   }, [shipment, selectedRouteId, evaluationResult])
 
+  // Multi-factor score breakdown data for Recharts
+  const scoreChartData = useMemo(() => {
+    return (evaluationResult?.score_breakdowns || []).map((sb) => {
+      const fullRoute = (shipment?.routes || []).find((r) => r.id === sb.route_id)
+      const routeTitle = fullRoute?.route_name || sb.route_name || sb.route_id
+      return {
+        name: routeTitle.length > 28 ? routeTitle.substring(0, 26) + '…' : routeTitle,
+        route_id: sb.route_id,
+        total_score: sb.total_score,
+        rank: sb.rank,
+        'Cost': Number((sb.cost_score || 0).toFixed(1)),
+        'Transit Time': Number((sb.transit_score || 0).toFixed(1)),
+        'Delay Risk': Number((sb.delay_score || 0).toFixed(1)),
+        'Port Congestion': Number((sb.congestion_score || 0).toFixed(1)),
+        'Geopolitical': Number((sb.geopolitical_score || 0).toFixed(1)),
+        'Weather': Number((sb.weather_score || 0).toFixed(1)),
+        'Carbon': Number((sb.carbon_score || 0).toFixed(1)),
+      }
+    })
+  }, [evaluationResult, shipment])
+
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-400">
@@ -327,8 +348,8 @@ export default function ShipmentAnalysis() {
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Corridor: <span className="text-slate-200 font-semibold">{shipment.origin_port_id}</span> →{' '}
-              <span className="text-slate-200 font-semibold">{shipment.destination_port_id}</span> ·{' '}
+              Corridor: <span className="text-slate-200 font-semibold">{shipment.origin?.id || shipment.origin_label || shipment.origin_port_id}</span> →{' '}
+              <span className="text-slate-200 font-semibold">{shipment.destination?.id || shipment.destination_label || shipment.destination_port_id}</span> ·{' '}
               {shipment.cargo_type} ({shipment.weight_tons} tons) · Target:{' '}
               {shipment.target_delivery_days ? `${shipment.target_delivery_days} days` : 'Flexible'}
             </p>
@@ -446,8 +467,8 @@ export default function ShipmentAnalysis() {
               className="w-full h-full"
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
               <AutoFitBounds points={mapData.ports} />
@@ -578,6 +599,63 @@ export default function ShipmentAnalysis() {
           </div>
         </div>
       </div>
+
+      {/* Route Multi-Factor Score Breakdown Chart */}
+      {scoreChartData.length > 0 && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <span>Multi-Factor Suitability Score Breakdown</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
+                  MCDA Model (0–100 pts)
+                </span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Stacked factor contributions (Cost, Transit, Delay, Congestion, Geopolitics, Weather, Carbon) composing each route's total score
+              </p>
+            </div>
+            <div className="text-xs text-slate-400 font-mono">
+              Higher score = Higher recommendation priority
+            </div>
+          </div>
+
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={scoreChartData}
+                layout="vertical"
+                margin={{ top: 10, right: 30, left: 30, bottom: 20 }}
+              >
+                <XAxis type="number" domain={[0, 100]} stroke="#64748b" fontSize={11} tickLine={false} unit=" pts" />
+                <YAxis dataKey="name" type="category" stroke="#cbd5e1" fontSize={11} tickLine={false} width={190} />
+                <Tooltip
+                  formatter={(value, name) => [`${value} pts`, name]}
+                  labelFormatter={(label, payload) => {
+                    const item = payload?.[0]?.payload
+                    return item ? `${label} (Total: ${item.total_score} pts · Rank #${item.rank})` : label
+                  }}
+                  contentStyle={{
+                    backgroundColor: '#0f172a',
+                    borderColor: '#334155',
+                    borderRadius: '0.5rem',
+                    color: '#f8fafc',
+                    fontSize: '12px',
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Bar dataKey="Cost" stackId="score" fill="#38bdf8" />
+                <Bar dataKey="Transit Time" stackId="score" fill="#818cf8" />
+                <Bar dataKey="Delay Risk" stackId="score" fill="#f59e0b" />
+                <Bar dataKey="Port Congestion" stackId="score" fill="#fb923c" />
+                <Bar dataKey="Geopolitical" stackId="score" fill="#f43f5e" />
+                <Bar dataKey="Weather" stackId="score" fill="#a855f7" />
+                <Bar dataKey="Carbon" stackId="score" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Planner Controls: Preference Presets, Sliders & Constraints */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-5">
@@ -752,6 +830,41 @@ export default function ShipmentAnalysis() {
             </button>
           </div>
         </form>
+
+        {/* Recorded Review History */}
+        {(shipment.reviews || []).length > 0 && (
+          <div className="pt-3 border-t border-slate-800 space-y-2">
+            <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              Recorded Review History ({shipment.reviews.length})
+            </h3>
+            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+              {shipment.reviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="bg-slate-950/60 border border-slate-800 rounded p-2 text-xs flex items-center justify-between"
+                >
+                  <div>
+                    <span
+                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase mr-2 ${
+                        rev.decision === 'approved'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      }`}
+                    >
+                      {rev.decision}
+                    </span>
+                    <span className="text-slate-300">
+                      {rev.decision_note || 'No notes provided'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500">
+                    {rev.reviewed_at ? new Date(rev.reviewed_at).toLocaleDateString() : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
