@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import Dashboard from './Dashboard'
+import ShipmentAnalysis from './ShipmentAnalysis'
 
 function Navbar() {
   return (
@@ -37,17 +38,6 @@ function Navbar() {
   )
 }
 
-function AnalysisPlaceholder() {
-  return (
-    <div className="p-8 max-w-7xl mx-auto flex-1 flex flex-col justify-center items-center text-center">
-      <h1 className="text-xl font-bold text-slate-100 mb-2">Shipment Analysis &amp; Simulation</h1>
-      <p className="text-slate-400 text-sm">
-        Route comparison, interactive map, weather reassessment, and planner review module.
-      </p>
-    </div>
-  )
-}
-
 export default function App() {
   return (
     <BrowserRouter>
@@ -56,7 +46,7 @@ export default function App() {
         <main className="flex-1 flex flex-col">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/shipments/:id" element={<AnalysisPlaceholder />} />
+            <Route path="/shipments/:id" element={<ShipmentAnalysis />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

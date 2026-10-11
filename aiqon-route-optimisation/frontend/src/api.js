@@ -30,8 +30,10 @@ export async function evaluateRoutes(payload) {
   return response.data
 }
 
-export async function submitPlannerReview(payload) {
-  const response = await client.post('/recommendations/review', payload)
+export async function submitPlannerReview({ shipment_id, decision, selected_route_id, decision_note }) {
+  const response = await client.post('/recommendations/planner-review', null, {
+    params: { shipment_id, decision, selected_route_id, decision_note },
+  })
   return response.data
 }
 
