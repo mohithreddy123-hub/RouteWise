@@ -1,24 +1,72 @@
-# Local SQLite databases
-*.db
-*.sqlite3
+# ==============================================================================
+# RouteWise Git Ignore Configuration
+# ==============================================================================
 
-# Python virtual environment
+# Local SQLite databases & temporary DBs
+*.db
+*.sqlite
+*.sqlite3
+backend/aiqon.db
+backend/tests/test_aiqon.db
+aiqon-route-optimisation/backend/aiqon.db
+aiqon-route-optimisation/backend/tests/test_aiqon.db
+
+# Environment variables & secrets (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+*.local
+
+# Python virtual environments
 venv/
-backend/venv/
+.venv/
+env/
+ENV/
+**/venv/
+**/.venv/
 aiqon-route-optimisation/backend/venv/
 
-# Python bytecode & cache
+# Python bytecode, compilation & test caches
 __pycache__/
 **/__pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
+**/.pytest_cache/
 
-# Internal documentation
-aiqon-route-optimisation/IMPLEMENTATION_PLAN.md
-
-# Frontend dependencies & build artifacts
+# Node.js dependencies & package managers
 node_modules/
+**/node_modules/
 frontend/node_modules/
 aiqon-route-optimisation/frontend/node_modules/
+
+# Frontend build outputs & Vite cache
 dist/
+**/dist/
+frontend/dist/
+aiqon-route-optimisation/frontend/dist/
 .vite/
+**/.vite/
+frontend/.vite/
+aiqon-route-optimisation/frontend/.vite/
+
+# Logs & debugging
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Operating system & editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Internal development files & audits
+aiqon-route-optimisation/IMPLEMENTATION_PLAN.md
+aiqon-route-optimisation/PROJECT_AUDIT.md
+aiqon-route-optimisation/project details.txt
