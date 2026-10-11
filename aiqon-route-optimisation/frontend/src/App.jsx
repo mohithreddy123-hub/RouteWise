@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
+import Dashboard from './Dashboard'
 
 function Navbar() {
   return (
@@ -36,26 +37,12 @@ function Navbar() {
   )
 }
 
-function DashboardPlaceholder() {
-  return (
-    <div className="p-8 max-w-7xl mx-auto flex-1 flex flex-col justify-center items-center text-center">
-      <div className="p-4 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-3xl mb-4">
-        🚢
-      </div>
-      <h1 className="text-2xl font-bold text-slate-100 mb-2">Shipment Route Optimisation</h1>
-      <p className="text-slate-400 max-w-md text-sm">
-        Phase 4 scaffold ready. Proceed to Phase 5 &amp; 6 to integrate live backend APIs and dashboard analytics.
-      </p>
-    </div>
-  )
-}
-
 function AnalysisPlaceholder() {
   return (
     <div className="p-8 max-w-7xl mx-auto flex-1 flex flex-col justify-center items-center text-center">
       <h1 className="text-xl font-bold text-slate-100 mb-2">Shipment Analysis &amp; Simulation</h1>
       <p className="text-slate-400 text-sm">
-        Route comparison, weather reassessment, and planner review module.
+        Route comparison, interactive map, weather reassessment, and planner review module.
       </p>
     </div>
   )
@@ -68,7 +55,7 @@ export default function App() {
         <Navbar />
         <main className="flex-1 flex flex-col">
           <Routes>
-            <Route path="/" element={<DashboardPlaceholder />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/shipments/:id" element={<AnalysisPlaceholder />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
