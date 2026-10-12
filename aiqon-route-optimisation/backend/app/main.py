@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db, SessionLocal
 from app.seed_data import seed_all
-from app.routers import shipments, recommendations, weather, sources, assistant
+from app.routers import shipments, recommendations, weather, sources, assistant, ports
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -76,6 +76,8 @@ app.include_router(recommendations.router)
 app.include_router(weather.router)
 app.include_router(sources.router)
 app.include_router(assistant.router)
+app.include_router(ports.router)
+
 
 
 # ─── Health Check ────────────────────────────────────────────────────────────
