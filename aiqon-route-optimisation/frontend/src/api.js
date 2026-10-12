@@ -66,10 +66,26 @@ export async function getSuggestedPrompts() {
   return response.data
 }
 
+export async function getMLStatus() {
+  const response = await client.get('/recommendations/ml-status')
+  return response.data
+}
+
+export async function getPorts(params = {}) {
+  const response = await client.get('/ports', { params })
+  return Array.isArray(response.data) ? response.data : []
+}
+
+export async function getPort(id) {
+  const response = await client.get(`/ports/${id}`)
+  return response.data
+}
+
 export async function sendAssistantChat(payload) {
   const response = await client.post('/assistant/chat', payload)
   return response.data
 }
 
 export default client
+
 
