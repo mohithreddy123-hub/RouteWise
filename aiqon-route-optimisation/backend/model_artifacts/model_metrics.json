@@ -1,0 +1,20 @@
+{
+  "algorithm": "RandomForestRegressor",
+  "framework": "scikit-learn",
+  "n_estimators": 50,
+  "train_samples": 55,
+  "test_samples": 14,
+  "held_out_mae": 1.61,
+  "held_out_rmse": 2.02,
+  "held_out_r2": 0.8971,
+  "feature_importances": {
+    "transit_days": 0.0357,
+    "congestion_risk": 0.8564,
+    "weather_risk": 0.0454,
+    "geopolitical_risk": 0.045,
+    "num_legs": 0.0047,
+    "total_distance_km": 0.0128
+  },
+  "data_source": "synthetic_corridor_benchmarks",
+  "disclaimer": "Trained on synthetic multi-modal route records. Intended for decision support and scenario comparison."
+}

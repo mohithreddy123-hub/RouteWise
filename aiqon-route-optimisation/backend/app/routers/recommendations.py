@@ -8,6 +8,7 @@ from app.database import get_db
 from app import models
 from app.schemas import RecommendationRequest, RecommendationResponse
 from app.services import recommendation_service
+from app.services.ml_delay_service import delay_predictor
 
 router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
@@ -15,6 +16,13 @@ DATA_DISCLAIMER = (
     "This application uses synthetic sample data. All costs, transit times, "
     "risk scores, and route options are illustrative and not verified commercial data."
 )
+
+
+@router.get("/ml-status", response_model=dict)
+def get_ml_status():
+    """Return scikit-learn ML delay predictor metadata, metrics, and data disclosure."""
+    return delay_predictor.get_status()
+
 
 
 @router.post("/evaluate", response_model=dict)

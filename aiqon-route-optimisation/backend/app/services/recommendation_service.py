@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app import models
 from app.schemas import WeightsSchema, ConstraintsSchema
 from app.services import scoring_service, explanation_service
+from app.services.ml_delay_service import delay_predictor
 
 
 def _route_to_dict(route: models.RouteOption) -> dict:
@@ -72,6 +73,14 @@ def evaluate_recommendation(
 
     score_breakdowns = scoring_service.score_routes(eligible, effective_weights)
 
+    # Attach ML delay forecast to score breakdowns
+    for bd in score_breakdowns:
+        matching = next((r for r in eligible if r["id"] == bd["route_id"]), None)
+        if matching:
+            ml_pred = delay_predictor.predict_route(matching)
+            bd["ml_predicted_delay_prob"] = ml_pred["ml_predicted_delay_prob"]
+            bd["ml_risk_category"] = ml_pred["ml_risk_category"]
+
     # Build recommended route dict
     recommended_dict = None
     if score_breakdowns:
@@ -79,24 +88,30 @@ def evaluate_recommendation(
         top_bd = score_breakdowns[0]
         for r in eligible:
             if r["id"] == top_id:
+                ml_pred = delay_predictor.predict_route(r)
                 recommended_dict = {
                     **r,
                     "overall_risk": top_bd["overall_risk"],
                     "overall_risk_label": top_bd["overall_risk_label"],
                     "suitability_score": top_bd["total_score"],
+                    "ml_predicted_delay_prob": ml_pred["ml_predicted_delay_prob"],
+                    "ml_risk_category": ml_pred["ml_risk_category"],
                 }
                 break
 
-    # Enrich eligible routes with scores
+    # Enrich eligible routes with scores and ML predictions
     bd_map = {bd["route_id"]: bd for bd in score_breakdowns}
     enriched_eligible = []
     for r in eligible:
         bd = bd_map.get(r["id"], {})
+        ml_pred = delay_predictor.predict_route(r)
         enriched_eligible.append({
             **r,
             "overall_risk": bd.get("overall_risk"),
             "overall_risk_label": bd.get("overall_risk_label"),
             "suitability_score": bd.get("total_score"),
+            "ml_predicted_delay_prob": ml_pred["ml_predicted_delay_prob"],
+            "ml_risk_category": ml_pred["ml_risk_category"],
         })
 
     excluded_list = [
@@ -123,4 +138,10 @@ def evaluate_recommendation(
         "applied_weights": effective_weights,
         "applied_constraints": constraints.model_dump(),
         "preference": preference,
+        "ml_model_info": {
+            "algorithm": "RandomForestRegressor",
+            "framework": "scikit-learn",
+            "type": "delay_probability_forecast",
+            "is_synthetic_training_data": True,
+        },
     }
