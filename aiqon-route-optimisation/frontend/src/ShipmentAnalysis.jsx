@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from 'react-leaflet'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts'
 import {
   getShipment,
+  getShipments,
   evaluateRoutes,
   reassessWeather,
   submitPlannerReview,
@@ -35,10 +36,13 @@ function AutoFitBounds({ points }) {
 }
 
 export default function ShipmentAnalysis() {
-  const { id } = useParams()
+  const { id: paramId } = useParams()
+  const navigate = useNavigate()
+  const id = paramId || 'SHP-001'
 
   // Main data states
   const [shipment, setShipment] = useState(null)
+  const [allShipments, setAllShipments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -64,6 +68,16 @@ export default function ShipmentAnalysis() {
   const [decisionNote, setDecisionNote] = useState('')
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSuccess, setReviewSuccess] = useState(null)
+
+  // Fetch all shipments for corridor switcher
+  useEffect(() => {
+    getShipments()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.shipments || []
+        setAllShipments(list)
+      })
+      .catch((err) => console.warn('Could not fetch shipments for selector:', err))
+  }, [])
 
   // Load shipment on mount
   useEffect(() => {
@@ -332,8 +346,21 @@ export default function ShipmentAnalysis() {
             ←
           </Link>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-bold text-white font-mono">{shipment.id}</h1>
+              {allShipments.length > 0 && (
+                <select
+                  value={shipment.id}
+                  onChange={(e) => navigate(`/shipments/${e.target.value}`)}
+                  className="bg-slate-900 border border-slate-700/80 text-xs font-mono text-slate-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500 hover:border-slate-600 transition"
+                >
+                  {allShipments.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.id}: {s.origin_port_id} → {s.destination_port_id} ({s.cargo_type})
+                    </option>
+                  ))}
+                </select>
+              )}
               <span
                 className={`text-xs px-2 py-0.5 rounded font-medium ${
                   shipment.priority?.toLowerCase() === 'high'
@@ -359,14 +386,14 @@ export default function ShipmentAnalysis() {
         {/* Weather Scenario Quick Switcher */}
         <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800">
           <span className="text-xs text-slate-400 px-2 font-medium">Weather:</span>
-          {['normal', 'moderate_storm', 'severe_cyclone'].map((scen) => (
+          {['normal', 'moderate_storm', 'severe_weather'].map((scen) => (
             <button
               key={scen}
               onClick={() => handleWeatherScenario(scen)}
               disabled={reassessingWeather}
               className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${
                 weatherScenario === scen
-                  ? scen === 'severe_cyclone'
+                  ? scen === 'severe_weather'
                     ? 'bg-rose-600 text-white'
                     : scen === 'moderate_storm'
                     ? 'bg-amber-600 text-white'
