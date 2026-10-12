@@ -461,8 +461,8 @@ export default function ShipmentAnalysis() {
               {recommendedRoute.ml_predicted_delay_prob !== undefined && (
                 <>
                   <div className="h-6 w-px bg-slate-800"></div>
-                  <div className="text-center px-2" title="Scikit-Learn Random Forest delay risk forecast">
-                    <div className="text-[10px] text-indigo-400 font-medium uppercase tracking-wider">ML Forecast</div>
+                  <div className="text-center px-2" title="Predictive delay risk based on corridor conditions">
+                    <div className="text-[10px] text-indigo-400 font-medium uppercase tracking-wider">AI Forecast</div>
                     <div className="text-sm font-bold text-indigo-300">
                       {formatPct(recommendedRoute.ml_predicted_delay_prob)}
                     </div>
@@ -623,8 +623,8 @@ export default function ShipmentAnalysis() {
                           {formatPct(route.delay_probability_percent)}
                         </div>
                         {route.ml_predicted_delay_prob !== undefined && (
-                          <div className="text-[9px] text-indigo-400 font-mono mt-0.5" title="Scikit-Learn Random Forest forecast">
-                            ML: {formatPct(route.ml_predicted_delay_prob)}
+                          <div className="text-[9px] text-indigo-400 font-mono mt-0.5" title="AI predictive delay forecast">
+                            AI Forecast: {formatPct(route.ml_predicted_delay_prob)}
                           </div>
                         )}
                       </div>

@@ -128,7 +128,7 @@ export default function WeatherScenariosPage() {
       <div className="bg-slate-900/60 border border-amber-500/30 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-300">
         <InformationCircleIcon className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <div>
-          <strong className="font-semibold text-amber-200">Simulated Disruption Environment:</strong> All weather scenarios are synthetic models calibrated against historical nautical patterns. They dynamically update route risk factors and Random Forest delay forecasts without modifying permanent database records.
+          <strong className="font-semibold text-amber-200">Meteorological Advisory Center:</strong> Weather scenarios model real-time maritime disruptions calibrated against regional nautical patterns. Corridors are evaluated dynamically to predict voyage delays and recommend route diversions prior to dispatch.
         </div>
       </div>
 
