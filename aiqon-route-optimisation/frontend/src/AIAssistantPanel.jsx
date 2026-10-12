@@ -303,19 +303,28 @@ export default function AIAssistantPanel({ activeShipmentId = null, onSelectRout
                         </div>
                       )}
 
-                      {/* Tool Calls Execution Info */}
+                      {/* Operational Intelligence Sources Consulted */}
                       {m.tool_calls && m.tool_calls.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1 text-[10px] text-slate-400 pt-1">
                           <CheckCircleIcon className="w-3 h-3 text-emerald-400 inline" />
-                          <span>Used backend tools:</span>
-                          {m.tool_calls.map((t, i) => (
-                            <span
-                              key={i}
-                              className="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono text-[9px] border border-slate-700"
-                            >
-                              {t.tool}
-                            </span>
-                          ))}
+                          <span>Operational Intelligence:</span>
+                          {m.tool_calls.map((t, i) => {
+                            const labels = {
+                              evaluate_routes_for_shipment: 'Route Optimization Engine',
+                              search_shipments: 'Manifest Inventory Lookup',
+                              get_shipment_details: 'Consignment Specifications',
+                              simulate_weather_impact: 'Maritime Weather Analysis',
+                              get_system_overview: 'Global Fleet Surveillance',
+                            }
+                            return (
+                              <span
+                                key={i}
+                                className="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-medium text-[9px] border border-slate-700"
+                              >
+                                {labels[t.tool] || t.tool}
+                              </span>
+                            )
+                          })}
                         </div>
                       )}
                     </div>

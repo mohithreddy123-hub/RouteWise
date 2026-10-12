@@ -30,21 +30,21 @@ export default function AssistantPage() {
 
           <div className="space-y-2 text-xs">
             <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80">
-              <strong className="text-emerald-400 block mb-0.5">1. Approved Tool Execution</strong>
+              <strong className="text-emerald-400 block mb-0.5">1. Verified Logistics Intelligence</strong>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Executes read-only backend tools including <code className="text-cyan-300">evaluate_routes_for_shipment</code>, <code className="text-cyan-300">search_shipments</code>, and <code className="text-cyan-300">simulate_weather_impact</code>.
+                Directly interrogates RouteWise freight dispatch manifests, active port schedules, and route evaluations.
               </p>
             </div>
 
             <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80">
-              <strong className="text-blue-400 block mb-0.5">2. Scikit-Learn Random Forest</strong>
+              <strong className="text-blue-400 block mb-0.5">2. Predictive Delay Intelligence</strong>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Predicts non-linear maritime delay probabilities (0–100%) based on weather exposure, historical congestion, and distance.
+                Forecasts empirical maritime delay probabilities based on weather exposure, historical port dwell times, and multimodal corridor distance.
               </p>
             </div>
 
             <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80">
-              <strong className="text-amber-400 block mb-0.5">3. Multi-Criteria Decision Analysis (MCDA)</strong>
+              <strong className="text-amber-400 block mb-0.5">3. Multi-Factor Route Optimization</strong>
               <p className="text-[11px] text-slate-400 leading-relaxed">
                 Ranks all corridor alternatives across 7 weighted dimensions: cost, transit speed, delay risk, port congestion, geopolitics, weather, and carbon.
               </p>
