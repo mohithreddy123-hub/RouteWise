@@ -254,6 +254,16 @@ def get_shipment(shipment_id: str, db: Session = Depends(get_db)):
             }
             for rev in (shipment.planner_reviews or [])
         ],
+        "planner_reviews": [
+            {
+                "id": rev.id,
+                "decision": rev.decision,
+                "selected_route_id": rev.selected_route_id,
+                "decision_note": rev.decision_note,
+                "reviewed_at": rev.reviewed_at.isoformat() if rev.reviewed_at else None,
+            }
+            for rev in (shipment.planner_reviews or [])
+        ],
         "data_disclaimer": DATA_DISCLAIMER,
     }
 

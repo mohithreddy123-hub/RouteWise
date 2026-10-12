@@ -55,4 +55,21 @@ export async function getDataSources() {
   return response.data
 }
 
+// GenAI Logistics Assistant API
+export async function getAssistantStatus() {
+  const response = await client.get('/assistant/status')
+  return response.data
+}
+
+export async function getSuggestedPrompts() {
+  const response = await client.get('/assistant/suggested-prompts')
+  return response.data
+}
+
+export async function sendAssistantChat(payload) {
+  const response = await client.post('/assistant/chat', payload)
+  return response.data
+}
+
 export default client
+

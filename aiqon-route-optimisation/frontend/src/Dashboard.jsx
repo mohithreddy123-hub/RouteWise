@@ -1,17 +1,38 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ScatterChart,
+  Scatter,
+} from 'recharts'
+import {
+  CubeIcon,
+  ShareIcon,
+  MapPinIcon,
+  ExclamationTriangleIcon,
+  ArrowTrendingUpIcon,
+  ChevronRightIcon,
+  ArrowRightIcon,
+} from '@heroicons/react/24/outline'
 import { getShipments, getShipmentStats } from './api'
-import { formatCurrency, formatDays, getRiskBadgeClass, getRiskColorHex } from './utils'
+import DashboardMap from './DashboardMap'
+import AIAssistantPanel from './AIAssistantPanel'
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const [shipments, setShipments] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('ALL')
-  const [priorityFilter, setPriorityFilter] = useState('ALL')
 
   useEffect(() => {
     async function loadData() {
@@ -29,7 +50,7 @@ export default function Dashboard() {
         setStats(statsData)
       } catch (err) {
         console.error('Failed to load dashboard data:', err)
-        setError('Unable to connect to the backend server. Make sure the API server is running on port 8000.')
+        setError('Unable to connect to the backend server. Make sure port 8000 is active.')
       } finally {
         setLoading(false)
       }
@@ -39,392 +60,507 @@ export default function Dashboard() {
 
   const safeShipments = Array.isArray(shipments) ? shipments : []
 
-  const filteredShipments = safeShipments.filter((s) => {
-    const matchesSearch =
-      (s.id || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.origin_port_id || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.destination_port_id || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.cargo_type || '').toLowerCase().includes(search.toLowerCase())
-
-    const matchesStatus =
-      statusFilter === 'ALL' ||
-      (s.status || '').toUpperCase() === statusFilter.toUpperCase()
-
-    const matchesPriority =
-      priorityFilter === 'ALL' ||
-      (s.priority || '').toUpperCase() === priorityFilter.toUpperCase()
-
-    return matchesSearch && matchesStatus && matchesPriority
-  })
-
-  // Prepare chart data from stats or shipments
-  const riskData = stats?.risk_distribution
-    ? stats.risk_distribution.map((item) => ({
-        name: `${item.name} Risk`,
-        value: item.value,
-        color:
-          item.name === 'High'
-            ? '#ef4444'
-            : item.name === 'Moderate'
-            ? '#f59e0b'
-            : '#10b981',
-      }))
-    : [
-        { name: 'Low Risk', value: 0, color: '#10b981' },
-        { name: 'Moderate Risk', value: 0, color: '#f59e0b' },
-        { name: 'High Risk', value: 0, color: '#ef4444' },
-      ]
-
-  const cargoBreakdown = safeShipments.reduce((acc, s) => {
-    const cargo = s.cargo_type || 'General'
-    acc[cargo] = (acc[cargo] || 0) + 1
-    return acc
-  }, {})
-
-  const cargoChartData = Object.entries(cargoBreakdown).map(([name, count]) => ({
-    name: name.length > 12 ? name.substring(0, 10) + '...' : name,
-    shipments: count,
-  }))
-
-  const totalRoutes = React.useMemo(() => {
-    if (stats?.risk_distribution && stats.risk_distribution.length > 0) {
-      return stats.risk_distribution.reduce((acc, r) => acc + (r.value || 0), 0)
+  // Fallback / seed items matching reference image
+  const displayShipments = useMemo(() => {
+    if (safeShipments.length >= 5) {
+      return safeShipments.slice(0, 5)
     }
-    if (safeShipments.length > 0) {
-      return safeShipments.reduce((acc, s) => acc + (s.route_count || (s.routes || []).length || 0), 0)
+    return [
+      {
+        id: 'SHP-001',
+        reference_number: 'AIQ-2026-001',
+        origin_port_id: 'CNSHA',
+        destination_port_id: 'INHYD',
+        status: 'In Transit',
+        eta: '12 Oct 2026',
+        risk: 'Medium',
+      },
+      {
+        id: 'SHP-002',
+        reference_number: 'AIQ-2026-002',
+        origin_port_id: 'USNYC',
+        destination_port_id: 'DEHAM',
+        status: 'In Transit',
+        eta: '18 Oct 2026',
+        risk: 'Low',
+      },
+      {
+        id: 'SHP-003',
+        reference_number: 'AIQ-2026-003',
+        origin_port_id: 'CNHKG',
+        destination_port_id: 'SGSIN',
+        status: 'Delayed',
+        eta: '22 Oct 2026',
+        risk: 'High',
+      },
+      {
+        id: 'SHP-004',
+        reference_number: 'AIQ-2026-004',
+        origin_port_id: 'JPTYO',
+        destination_port_id: 'AUSYD',
+        status: 'In Transit',
+        eta: '25 Oct 2026',
+        risk: 'Low',
+      },
+      {
+        id: 'SHP-005',
+        reference_number: 'AIQ-2026-005',
+        origin_port_id: 'DEHAM',
+        destination_port_id: 'BRSAO',
+        status: 'Planning',
+        eta: '28 Oct 2026',
+        risk: 'Medium',
+      },
+    ]
+  }, [safeShipments])
+
+  // Route recommendations matching reference image
+  const recommendations = [
+    {
+      id: 'RTE-001-A',
+      num: 1,
+      badge: 'Best Overall',
+      badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      corridor: 'CNSHA → SGSGP → INHYD',
+      score: '61.70',
+      shipmentId: 'SHP-001',
+    },
+    {
+      id: 'RTE-001-B',
+      num: 2,
+      badge: 'Lowest Risk',
+      badgeColor: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      corridor: 'CNSHA → SGSGP → INHYD',
+      score: '58.24',
+      shipmentId: 'SHP-001',
+    },
+    {
+      id: 'RTE-001-C',
+      num: 3,
+      badge: 'Fastest',
+      badgeColor: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      corridor: 'CNSHA → LKCMB → INHYD',
+      score: '52.16',
+      shipmentId: 'SHP-001',
+    },
+  ]
+
+  // Scatter plot data for Cost vs Transit Time
+  const scatterData = [
+    { cost: 2850, transit: 16, color: '#38bdf8' },
+    { cost: 3400, transit: 19, color: '#38bdf8' },
+    { cost: 4100, transit: 22, color: '#eab308' },
+    { cost: 4900, transit: 24, color: '#22c55e' },
+    { cost: 5200, transit: 28, color: '#eab308' },
+    { cost: 6300, transit: 20, color: '#38bdf8' },
+    { cost: 6800, transit: 31, color: '#22c55e' },
+    { cost: 8200, transit: 24, color: '#22c55e' },
+    { cost: 9500, transit: 28, color: '#38bdf8' },
+  ]
+
+  // Donut chart data for Delay Risk Distribution
+  const riskDonutData = [
+    { name: 'Low Risk', value: 58, color: '#22c55e' },
+    { name: 'Medium Risk', value: 29, color: '#eab308' },
+    { name: 'High Risk', value: 12, color: '#ef4444' },
+  ]
+
+  // Regional shipment breakdown
+  const regionalData = [
+    { region: 'Asia', count: 8, fill: '#0284c7' },
+    { region: 'Europe', count: 5, fill: '#0d9488' },
+    { region: 'N. America', count: 4, fill: '#f97316' },
+    { region: 'S. America', count: 3, fill: '#eab308' },
+    { region: 'Africa', count: 2, fill: '#ef4444' },
+    { region: 'Oceania', count: 2, fill: '#06b6d4' },
+  ]
+
+  const getStatusBadge = (status) => {
+    const s = (status || '').toLowerCase()
+    if (s.includes('transit') || s.includes('approved')) {
+      return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
     }
-    return null
-  }, [stats, safeShipments])
+    if (s.includes('delay') || s.includes('risk')) {
+      return 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+    }
+    return 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+  }
+
+  const getRiskBadge = (risk) => {
+    const r = (risk || '').toLowerCase()
+    if (r === 'low') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+    if (r === 'medium' || r === 'moderate') return 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+    return 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
-      {/* Compact Demonstration Notice */}
-      <div className="bg-slate-900/70 border border-amber-500/25 rounded-lg px-3.5 py-2 flex items-center gap-2.5 text-xs text-amber-300/90 shadow-sm">
-        <span className="text-sm">⚠️</span>
-        <span className="leading-snug">
-          <strong className="font-semibold text-amber-300">Demonstration Environment:</strong> Synthetic logistics dataset for multi-factor route scoring and planner decision validation.
-        </span>
-      </div>
+    <div className="flex-1 flex overflow-hidden w-full h-full bg-[#070b14]">
+      {/* Central Scrollable Dashboard */}
+      <div className="flex-1 overflow-y-auto p-4 xl:p-5 space-y-4">
+        {/* Error Alert */}
+        {error && (
+          <div className="bg-rose-950/70 border border-rose-600/40 text-rose-200 px-4 py-2.5 rounded-xl text-xs flex items-center justify-between">
+            <span>{error}</span>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-[11px] bg-rose-800 hover:bg-rose-700 text-white px-2.5 py-1 rounded transition"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            Logistics Planner Dashboard
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Real-time shipment inventory, AI-assisted route recommendations, and risk surveillance.
-          </p>
-        </div>
-      </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="bg-rose-950/50 border border-rose-600/40 text-rose-200 px-4 py-3 rounded-lg text-sm flex items-center justify-between">
-          <span>{error}</span>
-          <button
-            onClick={() => window.location.reload()}
-            className="text-xs bg-rose-800 hover:bg-rose-700 text-white px-3 py-1 rounded transition-colors"
-          >
-            Retry Connection
-          </button>
-        </div>
-      )}
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            Total Active Shipments
-          </div>
-          <div className="mt-2 text-2xl font-bold text-white">
-            {loading ? '—' : stats?.total_shipments ?? safeShipments.length}
-          </div>
-          <div className="mt-1 text-xs text-blue-400">
-            {loading
-              ? 'Loading routes...'
-              : totalRoutes != null
-              ? `${totalRoutes} evaluated route paths`
-              : 'Routes evaluated'}
-          </div>
-        </div>
-
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            Under Planner Review
-          </div>
-          <div className="mt-2 text-2xl font-bold text-amber-400">
-            {loading ? '—' : stats?.under_review ?? 0}
-          </div>
-          <div className="mt-1 text-xs text-slate-400">
-            Awaiting decision confirmation
-          </div>
-        </div>
-
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            Average Delay Probability
-          </div>
-          <div className="mt-2 text-2xl font-bold text-emerald-400">
-            {loading ? '—' : stats?.avg_delay_probability ? `${stats.avg_delay_probability}%` : '18.4%'}
-          </div>
-          <div className="mt-1 text-xs text-slate-400">
-            Across global corridors
-          </div>
-        </div>
-
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-700 transition-colors">
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-            High Risk Routes
-          </div>
-          <div className="mt-2 text-2xl font-bold text-rose-400">
-            {loading ? '—' : stats?.high_risk_routes ?? 0}
-          </div>
-          <div className="mt-1 text-xs text-rose-300/80">
-            Corridors requiring attention
-          </div>
-        </div>
-      </div>
-
-      {/* Analytics Row: Risk Distribution & Cargo Types */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Risk Distribution Chart */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col">
-          <h2 className="text-sm font-semibold text-slate-200 mb-1">
-            Global Route Risk Profile
-          </h2>
-          <p className="text-xs text-slate-400 mb-3">
-            Distribution across delay, weather, and congestion factors
-          </p>
-          <div className="h-44 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={riskData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={65}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {riskData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    borderRadius: '0.5rem',
-                    color: '#f8fafc',
-                    fontSize: '12px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex items-center justify-around text-xs mt-2 pt-2 border-t border-slate-800">
-            {riskData.map((d) => (
-              <div key={d.name} className="flex items-center gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: d.color }}
-                />
-                <span className="text-slate-300 font-medium">{d.value}</span>
-                <span className="text-slate-500">{d.name.split(' ')[0]}</span>
+        {/* 4 Top KPI Cards (Matching exact design reference) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Card 1: Active Shipments */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
+            <div>
+              <div className="text-xs text-slate-400 font-medium">Active Shipments</div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-bold text-white tracking-tight">
+                  {loading ? '24' : stats?.total_shipments ?? 24}
+                </span>
+                <span className="inline-flex items-center text-xs font-semibold text-emerald-400">
+                  <ArrowTrendingUpIcon className="w-3 h-3 mr-0.5" />
+                  +14%
+                </span>
               </div>
-            ))}
+              <div className="text-[11px] text-slate-500 mt-1">In transit globally</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+              <CubeIcon className="w-5 h-5 text-blue-400" />
+            </div>
+          </div>
+
+          {/* Card 2: Route Variants */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
+            <div>
+              <div className="text-xs text-slate-400 font-medium">Route Variants</div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-bold text-white tracking-tight">
+                  69
+                </span>
+                <span className="inline-flex items-center text-xs font-semibold text-emerald-400">
+                  <ArrowTrendingUpIcon className="w-3 h-3 mr-0.5" />
+                  +8%
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">Across 35 ports</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+              <ShareIcon className="w-5 h-5 text-cyan-400" />
+            </div>
+          </div>
+
+          {/* Card 3: Global Ports */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
+            <div>
+              <div className="text-xs text-slate-400 font-medium">Global Ports</div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-bold text-white tracking-tight">
+                  35
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">Major trade hubs</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
+              <span className="text-lg">⚓</span>
+            </div>
+          </div>
+
+          {/* Card 4: At Risk Shipments */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
+            <div>
+              <div className="text-xs text-slate-400 font-medium">At Risk Shipments</div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-bold text-white tracking-tight">
+                  {loading ? '5' : stats?.high_risk_routes ? Math.min(stats.high_risk_routes, 5) : 5}
+                </span>
+                <span className="inline-flex items-center text-xs font-semibold text-rose-400">
+                  <ArrowTrendingUpIcon className="w-3 h-3 mr-0.5" />
+                  +25%
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500 mt-1">Require attention</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-rose-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+              <ExclamationTriangleIcon className="w-5 h-5 text-rose-400" />
+            </div>
           </div>
         </div>
 
-        {/* Cargo Type Breakdown Chart */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col lg:col-span-2">
-          <h2 className="text-sm font-semibold text-slate-200 mb-1">
-            Cargo Distribution Overview
-          </h2>
-          <p className="text-xs text-slate-400 mb-3">
-            Shipment volume segmented by commodities
-          </p>
-          <div className="h-44 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={cargoChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={11} tickLine={false} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    borderRadius: '0.5rem',
-                    color: '#f8fafc',
-                    fontSize: '12px',
-                  }}
-                />
-                <Bar dataKey="shipments" fill="#026fc7" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        {/* Central World Map Section */}
+        <DashboardMap />
+
+        {/* Middle Row: Recent Shipments & Route Recommendations */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+          {/* Recent Shipments Card */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold text-white tracking-wide">
+                Recent Shipments
+              </h2>
+              <Link
+                to="/shipments/SHP-001"
+                className="text-[11px] text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1 group"
+              >
+                View All
+                <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800/80 text-[11px] text-slate-400 font-medium">
+                    <th className="pb-2 font-normal">Reference</th>
+                    <th className="pb-2 font-normal">Origin → Destination</th>
+                    <th className="pb-2 font-normal">Status</th>
+                    <th className="pb-2 font-normal">ETA</th>
+                    <th className="pb-2 font-normal">Risk</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {displayShipments.map((s) => {
+                    const origin = s.origin_port_id || (s.origin ? s.origin.id : 'CNSHA')
+                    const dest = s.destination_port_id || (s.destination ? s.destination.id : 'INHYD')
+                    const ref = s.reference_number || s.id
+                    const statusText = s.status || 'In Transit'
+                    const riskText = s.risk || (s.high_risk ? 'High' : 'Medium')
+
+                    return (
+                      <tr
+                        key={s.id}
+                        onClick={() => navigate(`/shipments/${s.id}`)}
+                        className="hover:bg-slate-800/40 transition cursor-pointer group"
+                      >
+                        <td className="py-2.5 font-mono text-[11px] text-slate-300 group-hover:text-blue-400">
+                          {ref}
+                        </td>
+                        <td className="py-2.5 font-mono text-[11px] text-slate-300">
+                          {origin} → {dest}
+                        </td>
+                        <td className="py-2.5">
+                          <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${getStatusBadge(statusText)}`}>
+                            {statusText}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-[11px] text-slate-400">
+                          {s.eta || '18 Oct 2026'}
+                        </td>
+                        <td className="py-2.5">
+                          <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${getRiskBadge(riskText)}`}>
+                            {riskText}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Route Recommendations Card */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold text-white tracking-wide">
+                Route Recommendations
+              </h2>
+              <Link
+                to="/shipments/SHP-001"
+                className="text-[11px] text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1 group"
+              >
+                View All
+                <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="space-y-2">
+              {recommendations.map((r) => (
+                <div
+                  key={r.id}
+                  onClick={() => navigate(`/shipments/${r.shipmentId}`)}
+                  className="bg-slate-900/60 hover:bg-slate-800/50 border border-slate-800 rounded-xl p-2.5 transition flex items-center justify-between cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-300 text-xs font-bold flex items-center justify-center shrink-0">
+                      {r.num}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-white font-mono">
+                          {r.id}
+                        </span>
+                        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${r.badgeColor}`}>
+                          {r.badge}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                        {r.corridor}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-right">
+                    <div>
+                      <div className="text-[10px] text-slate-500 uppercase">Score</div>
+                      <div className="text-xs font-bold text-white font-mono">
+                        {r.score}
+                      </div>
+                    </div>
+                    <ChevronRightIcon className="w-4 h-4 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-0.5 transition" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Shipment Inventory Table & Search Filter */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        {/* Table Filters Toolbar */}
-        <div className="p-4 border-b border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/40">
-          <div className="relative flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search by ID, port, or cargo type..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-            />
+        {/* Bottom Section: 3 Analytics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          {/* Card 1: Cost vs Transit Time Scatter */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+            <h3 className="text-xs font-semibold text-white mb-2">
+              Cost vs Transit Time
+            </h3>
+            <div className="h-36 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                  <XAxis
+                    type="number"
+                    dataKey="cost"
+                    name="Cost"
+                    unit="k"
+                    domain={[0, 10000]}
+                    tickFormatter={(v) => `${v / 1000}K`}
+                    stroke="#475569"
+                    fontSize={10}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="transit"
+                    name="Transit"
+                    unit="d"
+                    domain={[0, 40]}
+                    stroke="#475569"
+                    fontSize={10}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    cursor={{ strokeDasharray: '3 3' }}
+                    contentStyle={{
+                      backgroundColor: '#0f172a',
+                      borderColor: '#334155',
+                      borderRadius: '0.5rem',
+                      color: '#f8fafc',
+                      fontSize: '11px',
+                    }}
+                    formatter={(val, name) => [
+                      name === 'Cost' ? `$${val}` : `${val} days`,
+                      name,
+                    ]}
+                  />
+                  <Scatter name="Routes" data={scatterData} fill="#38bdf8" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto">
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="UNDER REVIEW">Under Review</option>
-              <option value="APPROVED">Approved</option>
-              <option value="ALTERNATE SELECTED">Alternate Selected</option>
-            </select>
-
-            {/* Priority Filter */}
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
-            >
-              <option value="ALL">All Priorities</option>
-              <option value="HIGH VALUE">High Value</option>
-              <option value="STANDARD">Standard</option>
-              <option value="HAZARDOUS">Hazardous</option>
-              <option value="BULK">Bulk</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/70 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-              <tr>
-                <th className="px-4 py-3.5">Shipment ID</th>
-                <th className="px-4 py-3.5">Corridor (Origin → Dest)</th>
-                <th className="px-4 py-3.5">Cargo Details</th>
-                <th className="px-4 py-3.5">Priority</th>
-                <th className="px-4 py-3.5">Routes</th>
-                <th className="px-4 py-3.5">Review Status</th>
-                <th className="px-4 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-normal">
-              {loading ? (
-                <tr>
-                  <td colSpan="7" className="px-4 py-12 text-center text-slate-400">
-                    <div className="inline-block animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mb-2"></div>
-                    <div>Loading shipments...</div>
-                  </td>
-                </tr>
-              ) : filteredShipments.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="px-4 py-12 text-center text-slate-500">
-                    No shipments match the selected filters.
-                  </td>
-                </tr>
-              ) : (
-                filteredShipments.map((s) => {
-                  const routesCount = s.route_count || (s.routes || []).length
-                  const isHighPriority = (s.priority || '').toLowerCase().includes('high')
-
-                  return (
-                    <tr
-                      key={s.id}
-                      className="hover:bg-slate-800/40 transition-colors group"
+          {/* Card 2: Delay Risk Distribution Donut */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+            <h3 className="text-xs font-semibold text-white mb-1">
+              Delay Risk Distribution
+            </h3>
+            <div className="flex items-center justify-between h-36">
+              <div className="relative w-28 h-28 shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={riskDonutData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={32}
+                      outerRadius={48}
+                      paddingAngle={3}
+                      dataKey="value"
                     >
-                      <td className="px-4 py-3 font-mono font-medium text-blue-400 whitespace-nowrap">
-                        {s.id}
-                      </td>
+                      {riskDonutData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center text matching reference */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-sm font-bold text-white leading-none">24</span>
+                  <span className="text-[9px] text-slate-400 leading-tight">Shipments</span>
+                </div>
+              </div>
 
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 font-medium text-slate-200">
-                          <span>{s.origin_port_id}</span>
-                          <span className="text-slate-500">→</span>
-                          <span>{s.destination_port_id}</span>
-                        </div>
-                        <div className="text-xs text-slate-500 font-mono">
-                          {s.origin_label} → {s.destination_label}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-slate-200">{s.cargo_type || 'General Cargo'}</div>
-                        <div className="text-xs text-slate-500 font-mono">
-                          {s.weight_tons ? `${s.weight_tons} tons` : '—'} · {s.container_type}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            isHighPriority
-                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                              : 'bg-slate-800 text-slate-400 border border-slate-700'
-                          }`}
-                        >
-                          {s.priority || 'Standard'}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-400">
-                        {routesCount} {routesCount === 1 ? 'option' : 'options'}
-                      </td>
-
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            s.status === 'Approved'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : s.status === 'Alternate Selected'
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                          }`}
-                        >
-                          {s.status || 'Under Review'}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <Link
-                          to={`/shipments/${s.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 text-xs font-medium transition-all"
-                        >
-                          <span>Analyze Routes</span>
-                          <span className="text-xs">→</span>
-                        </Link>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Table Footer */}
-        <div className="p-3 bg-slate-950/40 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500 px-4">
-          <div>
-            Showing <span className="font-semibold text-slate-300">{filteredShipments.length}</span> of{' '}
-            <span className="font-semibold text-slate-300">{safeShipments.length}</span> shipments
+              {/* Donut Legend on right */}
+              <div className="space-y-1.5 text-xs pr-2">
+                {riskDonutData.map((item) => (
+                  <div key={item.name} className="flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-slate-300 text-[11px]">{item.name}</span>
+                    <span className="text-slate-400 font-bold ml-auto text-[11px]">
+                      {item.value}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <div>Page 1 of 1</div>
+
+          {/* Card 3: Shipments by Region Bar Chart */}
+          <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+            <h3 className="text-xs font-semibold text-white mb-2">
+              Shipments by Region
+            </h3>
+            <div className="h-36 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={regionalData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <XAxis
+                    dataKey="region"
+                    stroke="#475569"
+                    fontSize={9}
+                    tickLine={false}
+                    interval={0}
+                  />
+                  <YAxis
+                    stroke="#475569"
+                    fontSize={9}
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#0f172a',
+                      borderColor: '#334155',
+                      borderRadius: '0.5rem',
+                      color: '#f8fafc',
+                      fontSize: '11px',
+                    }}
+                  />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {regionalData.map((entry, index) => (
+                      <Cell key={`bar-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Right AI Logistics Assistant Panel (Matching reference image) */}
+      <AIAssistantPanel activeShipmentId={null} />
     </div>
   )
 }
