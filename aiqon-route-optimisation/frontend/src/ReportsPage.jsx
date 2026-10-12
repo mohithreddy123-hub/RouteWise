@@ -233,12 +233,12 @@ export default function ReportsPage() {
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
           <div className="text-[11px] text-slate-400 font-medium flex items-center justify-between">
             <span>Average Delay Forecast</span>
-            <span className="text-emerald-400 font-bold">ML</span>
+            <span className="text-emerald-400 font-bold">Predictive</span>
           </div>
           <div className="text-2xl font-bold text-emerald-400 mt-2">
             {stats?.avg_delay_probability ? `${stats.avg_delay_probability}%` : '18.4%'}
           </div>
-          <div className="text-[10px] text-slate-500 mt-0.5">Random Forest model inference</div>
+          <div className="text-[10px] text-slate-500 mt-0.5">Predictive corridor risk model</div>
         </div>
 
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
