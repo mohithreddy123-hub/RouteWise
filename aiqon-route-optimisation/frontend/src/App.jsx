@@ -409,7 +409,7 @@ function TopHeader() {
               <div className="border-b border-slate-800 pb-2">
                 <div className="font-bold text-white text-xs">Alex Mercer</div>
                 <div className="text-[10px] text-blue-400 font-medium">Lead Freight Planner</div>
-                <div className="text-[10px] text-slate-400 mt-1">Database: MySQL 8.0 (Live Persistent)</div>
+                <div className="text-[10px] text-slate-400 mt-1">Operational Hub: Global Freight Dispatch</div>
               </div>
 
               <div className="space-y-1 text-slate-300">

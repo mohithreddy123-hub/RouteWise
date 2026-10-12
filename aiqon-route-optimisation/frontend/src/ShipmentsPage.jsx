@@ -207,11 +207,11 @@ export default function ShipmentsPage() {
         </div>
 
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-xl p-3.5 shadow-sm">
-          <div className="text-[11px] text-slate-400 font-medium">Avg Delay Risk (ML)</div>
+          <div className="text-[11px] text-slate-400 font-medium">Avg Delay Risk</div>
           <div className="text-xl font-bold text-emerald-400 mt-1">
             {stats?.avg_delay_probability ? `${stats.avg_delay_probability}%` : '18.4%'}
           </div>
-          <div className="text-[10px] text-slate-500 mt-0.5">Random Forest model</div>
+          <div className="text-[10px] text-slate-500 mt-0.5">Predictive corridor risk index</div>
         </div>
 
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-xl p-3.5 shadow-sm">
