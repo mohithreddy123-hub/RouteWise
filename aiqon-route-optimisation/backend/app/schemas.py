@@ -207,6 +207,8 @@ class WeatherReassessRequest(BaseModel):
     @field_validator("scenario")
     @classmethod
     def validate_scenario(cls, v):
+        if v == "severe_cyclone":
+            v = "severe_weather"
         valid = {"normal", "moderate_storm", "severe_weather"}
         if v not in valid:
             raise ValueError(f"scenario must be one of {sorted(valid)}")

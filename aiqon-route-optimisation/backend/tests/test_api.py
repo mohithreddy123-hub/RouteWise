@@ -248,3 +248,33 @@ def test_data_sources(client):
     assert data["data_mode"] == "synthetic"
     assert len(data["sources"]) >= 3
     assert "global_disclaimer" in data
+
+
+# ─── Ports ────────────────────────────────────────────────────────────────────
+
+def test_list_ports(client):
+    r = client.get("/api/ports")
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, list)
+    assert len(data) == 35
+    port_ids = [p["id"] for p in data]
+    assert "CNSHA" in port_ids
+    assert "NLRTM" in port_ids
+    assert "INHYD" in port_ids
+
+
+def test_get_single_port(client):
+    r = client.get("/api/ports/CNSHA")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["id"] == "CNSHA"
+    assert data["city"] == "Shanghai"
+    assert data["country"] == "China"
+    assert "active_origin_shipments" in data
+
+
+def test_get_invalid_port_404(client):
+    r = client.get("/api/ports/UNKNOWN99")
+    assert r.status_code == 404
+
