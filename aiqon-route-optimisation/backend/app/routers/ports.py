@@ -1,5 +1,3 @@
-"""Ports API router."""
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -16,7 +14,6 @@ def get_all_ports(
     port_type: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Retrieve all ports with geographic coordinates and metadata."""
     query = db.query(models.Port)
     if country:
         query = query.filter(models.Port.country.ilike(f"%{country}%"))
@@ -41,7 +38,6 @@ def get_all_ports(
 
 @router.get("/{port_id}", response_model=dict)
 def get_port(port_id: str, db: Session = Depends(get_db)):
-    """Retrieve single port details and its active origin/destination shipments."""
     port = db.query(models.Port).filter(models.Port.id == port_id.upper()).first()
     if not port:
         raise HTTPException(status_code=404, detail=f"Port '{port_id}' not found")

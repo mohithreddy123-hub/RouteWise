@@ -1,5 +1,3 @@
-"""Data sources metadata router."""
-
 from fastapi import APIRouter
 
 router = APIRouter(prefix="/api/data-sources", tags=["data-sources"])
@@ -7,11 +5,6 @@ router = APIRouter(prefix="/api/data-sources", tags=["data-sources"])
 
 @router.get("", response_model=dict)
 def get_data_sources():
-    """
-    Return metadata describing the data sources used by this application.
-    In the initial build all data is synthetic. Real dataset integration
-    is a planned future phase — see IMPLEMENTATION_PLAN.md section 10.
-    """
     return {
         "data_mode": "synthetic",
         "sources": [

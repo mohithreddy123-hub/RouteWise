@@ -11,17 +11,14 @@ Startup sequence:
 
 import logging
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.database import init_db, SessionLocal
 from app.seed_data import seed_all
 from app.routers import shipments, recommendations, weather, sources, assistant, ports
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,11 +35,8 @@ async def lifespan(app: FastAPI):
         )
     finally:
         db.close()
-
-    yield  # Application runs here
-
+    yield
     logger.info("Shutting down Aiqon AI backend.")
-
 
 app = FastAPI(
     title="Aiqon AI — Shipment Route Optimisation",
@@ -55,8 +49,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ─── CORS ────────────────────────────────────────────────────────────────────
-# Allow the Vite dev server (default port 5173) and any localhost origin.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -70,7 +62,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Routers ─────────────────────────────────────────────────────────────────
 app.include_router(shipments.router)
 app.include_router(recommendations.router)
 app.include_router(weather.router)
@@ -78,9 +69,6 @@ app.include_router(sources.router)
 app.include_router(assistant.router)
 app.include_router(ports.router)
 
-
-
-# ─── Health Check ────────────────────────────────────────────────────────────
 @app.get("/api/health", tags=["health"])
 def health():
     return {
@@ -92,7 +80,6 @@ def health():
             "All route data, costs, and risk scores are synthetic."
         ),
     }
-
 
 @app.get("/", tags=["root"])
 def root():
