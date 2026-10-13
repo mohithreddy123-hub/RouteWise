@@ -5,7 +5,6 @@ import { SparklesIcon, CpuChipIcon, ShieldCheckIcon, CircleStackIcon } from '@he
 export default function AssistantPage() {
   return (
     <div className="flex-1 flex flex-col lg:flex-row h-full overflow-hidden bg-[#070b14] text-slate-100">
-      {/* Left Information & Capabilities Column */}
       <div className="w-full lg:w-96 xl:w-[440px] bg-[#0B1120] border-r border-slate-800/80 p-5 space-y-5 shrink-0 overflow-y-auto">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -21,7 +20,6 @@ export default function AssistantPage() {
           </p>
         </div>
 
-        {/* Engine Transparency Architecture */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-3">
           <h2 className="text-xs font-semibold text-white flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
             <CpuChipIcon className="w-4 h-4 text-cyan-400" />
@@ -52,7 +50,6 @@ export default function AssistantPage() {
           </div>
         </div>
 
-        {/* Safety & Compliance Constraints */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-2.5">
           <h3 className="text-[11px] font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
             <ShieldCheckIcon className="w-4 h-4 text-emerald-400" />
@@ -66,7 +63,6 @@ export default function AssistantPage() {
         </div>
       </div>
 
-      {/* Main AI Chat Workspace Column */}
       <div className="flex-1 flex justify-center h-full bg-[#070b14] overflow-hidden">
         <div className="w-full max-w-2xl h-full flex flex-col border-x border-slate-800/80 bg-[#0B1120]">
           <AIAssistantPanel />

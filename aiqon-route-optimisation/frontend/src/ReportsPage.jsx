@@ -52,7 +52,6 @@ export default function ReportsPage() {
     load()
   }, [])
 
-  // Functional CSV Export
   const handleExportCSV = () => {
     if (shipments.length === 0) return
 
@@ -91,7 +90,6 @@ export default function ReportsPage() {
     document.body.removeChild(link)
   }
 
-  // Functional JSON Export
   const handleExportJSON = () => {
     const reportData = {
       generated_at: new Date().toISOString(),
@@ -116,7 +114,6 @@ export default function ReportsPage() {
     document.body.removeChild(link)
   }
 
-  // Chart data
   const monthlyTrends = [
     { month: 'Jul 2026', shipments: 18, avgCost: 4200, onTimeRate: 88 },
     { month: 'Aug 2026', shipments: 21, avgCost: 4500, onTimeRate: 85 },
@@ -133,7 +130,6 @@ export default function ReportsPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 xl:p-6 space-y-5 bg-[#070b14] text-slate-100">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -145,7 +141,6 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        {/* Action Buttons: Real Downloads */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.print()}
@@ -174,7 +169,6 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Date & Corridor Filter Ribbon */}
       <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <CalendarIcon className="w-4 h-4 text-slate-400" />
@@ -208,7 +202,6 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Executive Scorecard Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
           <div className="text-[11px] text-slate-400 font-medium flex items-center justify-between">
@@ -251,9 +244,7 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Analytics Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Monthly Performance Trends */}
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
           <h3 className="text-xs font-bold text-white mb-2">Monthly Freight Volume & Reliability</h3>
           <div className="h-52 w-full">
@@ -277,7 +268,6 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {/* Carbon Footprint vs Transport Mode */}
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
           <h3 className="text-xs font-bold text-white mb-2">Carbon Emissions (kg CO2e) by Routing Architecture</h3>
           <div className="h-52 w-full">
