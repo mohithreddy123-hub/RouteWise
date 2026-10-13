@@ -1,13 +1,5 @@
-"""
-API integration tests.
-Uses the FastAPI TestClient with an in-memory SQLite database.
-All real endpoints are tested — no mocking of business logic.
-"""
-
 import pytest
 
-
-# ─── Health ───────────────────────────────────────────────────────────────────
 
 def test_health(client):
     r = client.get("/api/health")
@@ -21,8 +13,6 @@ def test_root(client):
     r = client.get("/")
     assert r.status_code == 200
 
-
-# ─── Shipments List ───────────────────────────────────────────────────────────
 
 def test_list_shipments_returns_24(client):
     r = client.get("/api/shipments")
@@ -55,8 +45,6 @@ def test_list_shipments_filter_status(client):
         assert s["status"] == "Under Review"
 
 
-# ─── Shipment Detail ─────────────────────────────────────────────────────────
-
 def test_get_shipment_detail(client):
     r = client.get("/api/shipments/SHP-001")
     assert r.status_code == 200
@@ -81,8 +69,6 @@ def test_get_shipment_routes(client):
     assert len(data["routes"]) >= 2
 
 
-# ─── Stats ────────────────────────────────────────────────────────────────────
-
 def test_shipments_stats(client):
     r = client.get("/api/shipments/stats")
     assert r.status_code == 200
@@ -93,8 +79,6 @@ def test_shipments_stats(client):
     assert "high_risk_routes" in data
     assert "risk_distribution" in data
 
-
-# ─── Recommendations ─────────────────────────────────────────────────────────
 
 VALID_EVAL_BODY = {
     "shipment_id": "SHP-001",
@@ -239,8 +223,6 @@ def test_weather_status(client):
     assert "severe_weather" in ids
 
 
-# ─── Data Sources ─────────────────────────────────────────────────────────────
-
 def test_data_sources(client):
     r = client.get("/api/data-sources")
     assert r.status_code == 200
@@ -249,8 +231,6 @@ def test_data_sources(client):
     assert len(data["sources"]) >= 3
     assert "global_disclaimer" in data
 
-
-# ─── Ports ────────────────────────────────────────────────────────────────────
 
 def test_list_ports(client):
     r = client.get("/api/ports")

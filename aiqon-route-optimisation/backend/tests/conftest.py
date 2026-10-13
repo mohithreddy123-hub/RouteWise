@@ -1,9 +1,3 @@
-"""
-Pytest configuration and fixtures.
-Uses a file-based SQLite test database so tests never touch the real aiqon.db.
-Tables are created and seeded once per session.
-"""
-
 import os
 import pytest
 from fastapi.testclient import TestClient
@@ -25,7 +19,6 @@ def test_engine():
         TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
     )
-    # Import models so metadata is populated
     from app import models  # noqa
     db_module.Base.metadata.create_all(bind=engine)
     return engine
@@ -38,7 +31,6 @@ def test_session_factory(test_engine):
 
 @pytest.fixture(scope="session")
 def seeded_db(test_session_factory, test_engine):
-    """Return a session with all synthetic data seeded (once per session)."""
     db = test_session_factory()
     seed_all(db)
     yield db
@@ -47,12 +39,6 @@ def seeded_db(test_session_factory, test_engine):
 
 @pytest.fixture(scope="session")
 def client(test_session_factory, test_engine):
-    """
-    FastAPI test client wired to the test SQLite database.
-    Tables are pre-created and seeded before any request is made.
-    lifespan=False skips the production startup (which uses the real engine).
-    """
-    # Seed the test DB explicitly before the client is created
     db = test_session_factory()
     seed_all(db)
     db.close()
@@ -66,7 +52,6 @@ def client(test_session_factory, test_engine):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    # lifespan=False disables startup/shutdown hooks for the test client
     with TestClient(app, raise_server_exceptions=True) as c:
         yield c
 
@@ -74,7 +59,6 @@ def client(test_session_factory, test_engine):
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """Clean up test database file after all tests complete."""
     if os.path.exists(TEST_DB_PATH):
         try:
             os.remove(TEST_DB_PATH)
