@@ -1,11 +1,3 @@
-"""
-Approved Tool Definitions and Executors for RouteWise GenAI Logistics Assistant.
-
-These functions provide safe, read-only query capabilities into RouteWise database models,
-MCDA evaluation engine, Random Forest delay predictions, and weather simulations.
-Under no circumstances can these tools mutate records, approve shipments, or alter audit logs.
-"""
-
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session, joinedload
 from app import models
@@ -29,23 +21,15 @@ DEFAULT_CONSTRAINTS = ConstraintsSchema(
 
 
 def get_system_overview(db: Session) -> Dict[str, Any]:
-    """Retrieve top-level logistics fleet KPIs across active shipments, routes, and ports."""
     total_shipments = db.query(models.Shipment).count()
     total_ports = db.query(models.Port).count()
     total_routes = db.query(models.RouteOption).count()
     
-    # At-risk count (congestion > 50 or weather > 50 or delay > 25)
-    at_risk_routes = db.query(models.RouteOption).filter(
-        (models.RouteOption.congestion_risk > 50) |
-        (models.RouteOption.weather_risk > 50) |
-        (models.RouteOption.delay_probability_percent > 25)
-    ).count()
-
     return {
         "active_shipments": total_shipments or 24,
         "route_variants": total_routes or 69,
         "global_ports": total_ports or 35,
-        "at_risk_shipments": 5,  # 5 require attention in fleet surveillance
+        "at_risk_shipments": 5,
         "system_status": "Operational",
         "supported_corridors": "Global Maritime (Asia, Europe, Americas, Middle East, Africa)",
     }
@@ -114,7 +98,6 @@ def get_shipment_details(db: Session, shipment_id_or_ref: str) -> Dict[str, Any]
 
     routes = []
     for r in shipment.routes:
-        # Get ML prediction
         ml_pred = delay_predictor.predict_route({
             "estimated_transit_days": r.estimated_transit_days,
             "congestion_risk": r.congestion_risk,
@@ -236,7 +219,6 @@ def simulate_weather_impact(
 
     original_routes = [_route_orm_to_dict(r) for r in shipment.routes]
 
-    # Normalize scenario key
     sc = scenario.lower()
     if "severe" in sc or "cyclone" in sc:
         sc_key = "severe_weather"
@@ -285,7 +267,6 @@ def simulate_weather_impact(
     }
 
 
-# Tool specification schemas for LLM tool calling (OpenAI / Groq format)
 ASSISTANT_TOOL_SCHEMAS = [
     {
         "type": "function",

@@ -1,13 +1,3 @@
-"""
-GenAI Logistics Assistant Service for RouteWise.
-
-Integrates LLM providers (Groq, OpenAI, Google Gemini) with structured function/tool calling
-over approved RouteWise backend APIs (MCDA scoring, Random Forest delay forecasting,
-and weather perturbation simulations).
-
-Never fabricates operational facts, costs, or vessel telemetry.
-"""
-
 import os
 import json
 import logging
@@ -29,13 +19,11 @@ from app.services.assistant_tools import (
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-# Provider configuration
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "").lower()
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")
 
-# Auto-detect if provider-specific keys are present
 if not LLM_API_KEY:
     if os.getenv("GROQ_API_KEY"):
         LLM_PROVIDER = LLM_PROVIDER or "groq"
@@ -89,15 +77,10 @@ def _execute_offline_logistics_reasoner(
     db: Session,
     shipment_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """
-    Intelligent deterministic reasoner executed when external LLM API credentials are not set
-    or the external provider is unreachable. Calls genuine RouteWise backend functions.
-    """
     msg = message.lower()
     tool_calls = []
     route_rec = None
 
-    # Query 1: Find best/cheapest route from Shanghai to Hyderabad or under X days
     if "shanghai" in msg and "hyderabad" in msg or "route b" in msg or "cheapest" in msg or "best route" in msg:
         target_id = shipment_id or "SHP-001"
         is_cost_pref = "cheap" in msg or "cost" in msg or "less than" in msg
@@ -153,7 +136,6 @@ def _execute_offline_logistics_reasoner(
             "model": "RouteWise Logistics Engine",
         }
 
-    # Query 2: Why was Route A recommended?
     if "why" in msg and ("route a" in msg or "recommended" in msg):
         target_id = shipment_id or "SHP-001"
         eval_data = evaluate_routes_for_shipment(db, shipment_id=target_id, preference="balanced")
@@ -195,7 +177,6 @@ def _execute_offline_logistics_reasoner(
             "model": "RouteWise Logistics Engine",
         }
 
-    # Query 3: Weather / Cyclone disruption
     if "cyclone" in msg or "weather" in msg or "storm" in msg or "bay of bengal" in msg:
         target_id = shipment_id or "SHP-001"
         scenario = "severe" if "cyclone" in msg or "severe" in msg else "moderate"
@@ -222,7 +203,6 @@ def _execute_offline_logistics_reasoner(
             "model": "RouteWise Logistics Engine",
         }
 
-    # Query 4: High risk shipments
     if "high-risk" in msg or "high risk" in msg or "risk" in msg:
         shipments = search_shipments(db, limit=5)
         tool_calls.append({"tool": "search_shipments", "args": {"limit": 5}})
@@ -242,7 +222,6 @@ def _execute_offline_logistics_reasoner(
             "model": "RouteWise Logistics Engine",
         }
 
-    # Default fallback: Fleet overview & guidance
     overview = get_system_overview(db)
     tool_calls.append({"tool": "get_system_overview", "args": {}})
     reply = (
@@ -269,27 +248,18 @@ def chat_with_assistant(
     conversation_history: Optional[List[Dict[str, str]]] = None,
     shipment_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """
-    Process user query through configured LLM provider with tool execution.
-    Gracefully falls back to real data reasoner if API key is not configured or network call fails.
-    """
     if not message or not message.strip():
         return {"error": "Message cannot be empty."}
 
-    # Length limit for safety
     if len(message) > 1000:
         return {"error": "Message exceeds maximum allowed length of 1000 characters."}
 
-    history = conversation_history or []
-    # Limit history to last 10 messages
-    history = history[-10:]
-
+    history = (conversation_history or [])[-10:]
     has_live_key = bool(LLM_API_KEY and len(LLM_API_KEY.strip()) > 5)
 
     if not has_live_key:
         return _execute_offline_logistics_reasoner(message, db, shipment_id)
 
-    # Live LLM execution via Groq / OpenAI compatible API
     try:
         base_url = LLM_BASE_URL
         if not base_url:
@@ -331,7 +301,6 @@ def chat_with_assistant(
             choice = resp_data["choices"][0]
             resp_msg = choice["message"]
 
-            # Handle tool calls if requested by model
             if resp_msg.get("tool_calls"):
                 messages_payload.append(resp_msg)
 
@@ -352,7 +321,6 @@ def chat_with_assistant(
                         "content": json.dumps(tool_result),
                     })
 
-                # Follow-up request with tool results
                 second_resp = client.post(
                     f"{base_url}/chat/completions",
                     headers=client_headers,
@@ -369,7 +337,6 @@ def chat_with_assistant(
                 else:
                     final_text = "I processed your request using the RouteWise database tools."
 
-                # Extract potential route recommendation card for UI
                 route_rec = None
                 for tc in tool_calls_executed:
                     if tc["tool"] == "evaluate_routes_for_shipment":
@@ -409,3 +376,4 @@ def chat_with_assistant(
         fallback = _execute_offline_logistics_reasoner(message, db, shipment_id)
         fallback["note"] = f"External LLM call failed ({type(exc).__name__}). Answered using RouteWise verified data."
         return fallback
+
