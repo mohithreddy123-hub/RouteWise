@@ -6,9 +6,6 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List, Any
 from datetime import datetime
 
-
-# ─── Port ────────────────────────────────────────────────────────────────────
-
 class PortSchema(BaseModel):
     id: str
     name: str
@@ -18,11 +15,7 @@ class PortSchema(BaseModel):
     lon: float
     port_type: str
     notes: Optional[str] = None
-
     model_config = {"from_attributes": True}
-
-
-# ─── Route Leg ───────────────────────────────────────────────────────────────
 
 class RouteLegSchema(BaseModel):
     id: str
@@ -35,11 +28,7 @@ class RouteLegSchema(BaseModel):
     distance_km: Optional[float] = None
     duration_days: Optional[float] = None
     notes: Optional[str] = None
-
     model_config = {"from_attributes": True}
-
-
-# ─── Route Option ────────────────────────────────────────────────────────────
 
 class RouteOptionSchema(BaseModel):
     id: str
@@ -63,11 +52,7 @@ class RouteOptionSchema(BaseModel):
     overall_risk: Optional[float] = None
     overall_risk_label: Optional[str] = None
     suitability_score: Optional[float] = None
-
     model_config = {"from_attributes": True}
-
-
-# ─── Shipment ─────────────────────────────────────────────────────────────────
 
 class ShipmentListSchema(BaseModel):
     id: str
@@ -84,9 +69,7 @@ class ShipmentListSchema(BaseModel):
     ready_date: str
     status: str
     route_count: int = 0
-
     model_config = {"from_attributes": True}
-
 
 class ShipmentDetailSchema(BaseModel):
     id: str
@@ -105,9 +88,6 @@ class ShipmentDetailSchema(BaseModel):
     routes: List[RouteOptionSchema] = []
 
     model_config = {"from_attributes": True}
-
-
-# ─── Recommendation Request/Response ─────────────────────────────────────────
 
 class WeightsSchema(BaseModel):
     cost: float = Field(28.0, ge=0, le=100)
@@ -128,7 +108,6 @@ class WeightsSchema(BaseModel):
             raise ValueError(f"Weights must total 100. Current total: {total:.1f}")
         return self
 
-
 class ConstraintsSchema(BaseModel):
     max_cost_usd: Optional[float] = Field(None, ge=0)
     max_transit_days: Optional[int] = Field(None, ge=1)
@@ -140,7 +119,6 @@ class ConstraintsSchema(BaseModel):
         if v is not None and v < 0:
             raise ValueError("max_cost_usd must be non-negative")
         return v
-
 
 class RecommendationRequest(BaseModel):
     shipment_id: str
@@ -155,7 +133,6 @@ class RecommendationRequest(BaseModel):
         if v not in valid:
             raise ValueError(f"preference must be one of {sorted(valid)}")
         return v
-
 
 class ScoreBreakdownSchema(BaseModel):
     route_id: str
@@ -172,12 +149,10 @@ class ScoreBreakdownSchema(BaseModel):
     overall_risk_label: Optional[str] = None
     rank: Optional[int] = None
 
-
 class ExcludedRouteSchema(BaseModel):
     route_id: str
     route_name: str
     reason: str
-
 
 class RecommendationResponse(BaseModel):
     shipment_id: str
@@ -193,9 +168,6 @@ class RecommendationResponse(BaseModel):
         "This application uses synthetic sample data. All costs, transit times, "
         "risk scores, and route options are illustrative and not verified commercial data."
     )
-
-
-# ─── Weather ─────────────────────────────────────────────────────────────────
 
 class WeatherReassessRequest(BaseModel):
     shipment_id: str
@@ -222,7 +194,6 @@ class WeatherReassessRequest(BaseModel):
             raise ValueError(f"preference must be one of {sorted(valid)}")
         return v
 
-
 class WeatherReassessResponse(BaseModel):
     shipment_id: str
     scenario: str
@@ -240,9 +211,6 @@ class WeatherReassessResponse(BaseModel):
         "Values are illustrative and for demonstration only."
     )
 
-
-# ─── Planner Review ──────────────────────────────────────────────────────────
-
 class PlannerReviewRequest(BaseModel):
     shipment_id: str
     decision: str
@@ -256,7 +224,6 @@ class PlannerReviewRequest(BaseModel):
         if v not in valid:
             raise ValueError(f"decision must be one of {sorted(valid)}")
         return v
-
 
 class PlannerReviewResponse(BaseModel):
     id: str
@@ -272,14 +239,10 @@ class PlannerReviewResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
-
-# ─── Health / Data Sources ────────────────────────────────────────────────────
-
 class HealthResponse(BaseModel):
     status: str
     version: str
     data_mode: str
-
 
 class DataSourceSchema(BaseModel):
     name: str

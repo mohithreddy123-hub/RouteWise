@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./aiqon.db")
 
-# Normalize mysql:// prefix to mysql+pymysql://
 if DATABASE_URL.startswith("mysql://"):
     DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
 
@@ -23,7 +22,6 @@ def _build_engine(url: str):
 
 try:
     engine = _build_engine(DATABASE_URL)
-    # Validate connection immediately for non-sqlite URLs
     if "sqlite" not in DATABASE_URL:
         with engine.connect() as _conn:
             pass
