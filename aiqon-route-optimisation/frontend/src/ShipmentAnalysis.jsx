@@ -19,7 +19,6 @@ import {
   PREFERENCE_PRESETS,
 } from './utils'
 
-// Helper component to auto-fit map bounds
 function AutoFitBounds({ points }) {
   const map = useMap()
   useEffect(() => {
@@ -40,13 +39,11 @@ export default function ShipmentAnalysis() {
   const navigate = useNavigate()
   const id = paramId || 'SHP-001'
 
-  // Main data states
   const [shipment, setShipment] = useState(null)
   const [allShipments, setAllShipments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Evaluation & Recommendation states
   const [activePreference, setActivePreference] = useState('balanced')
   const [weights, setWeights] = useState(PREFERENCE_PRESETS.balanced.weights)
   const [constraints, setConstraints] = useState({
@@ -58,18 +55,15 @@ export default function ShipmentAnalysis() {
   const [evaluating, setEvaluating] = useState(false)
   const [selectedRouteId, setSelectedRouteId] = useState(null)
 
-  // Weather simulation state
   const [weatherScenario, setWeatherScenario] = useState('normal')
   const [weatherNotice, setWeatherNotice] = useState(null)
   const [reassessingWeather, setReassessingWeather] = useState(false)
 
-  // Review submission state
   const [decision, setDecision] = useState('approved')
   const [decisionNote, setDecisionNote] = useState('')
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewSuccess, setReviewSuccess] = useState(null)
 
-  // Fetch all shipments for corridor switcher
   useEffect(() => {
     getShipments()
       .then((data) => {
@@ -79,7 +73,6 @@ export default function ShipmentAnalysis() {
       .catch((err) => console.warn('Could not fetch shipments for selector:', err))
   }, [])
 
-  // Load shipment on mount
   useEffect(() => {
     async function loadData() {
       try {
@@ -88,12 +81,10 @@ export default function ShipmentAnalysis() {
         const data = await getShipment(id)
         setShipment(data)
 
-        // Select initial top route
         if (data.routes && data.routes.length > 0) {
           setSelectedRouteId(data.routes[0].id)
         }
 
-        // Auto evaluate with balanced preset
         try {
           const evalData = await evaluateRoutes({
             shipment_id: id,
@@ -118,14 +109,12 @@ export default function ShipmentAnalysis() {
     loadData()
   }, [id])
 
-  // Weight sum calculation
   const totalWeight = useMemo(() => {
     return Object.values(weights).reduce((acc, v) => acc + (Number(v) || 0), 0)
   }, [weights])
 
   const isWeightValid = totalWeight === 100
 
-  // Preference preset click handler
   const handlePreferenceChange = (key) => {
     setActivePreference(key)
     if (PREFERENCE_PRESETS[key]) {
@@ -133,7 +122,6 @@ export default function ShipmentAnalysis() {
     }
   }
 
-  // Weight slider change handler
   const handleWeightChange = (factor, value) => {
     setWeights((prev) => ({
       ...prev,
@@ -141,7 +129,6 @@ export default function ShipmentAnalysis() {
     }))
   }
 
-  // Re-evaluate routes
   const handleEvaluate = async () => {
     if (!isWeightValid) {
       alert('Total weights must sum up to exactly 100% before evaluating.')
@@ -172,7 +159,6 @@ export default function ShipmentAnalysis() {
     }
   }
 
-  // Weather scenario change
   const handleWeatherScenario = async (scenario) => {
     try {
       setWeatherScenario(scenario)
@@ -183,11 +169,9 @@ export default function ShipmentAnalysis() {
       })
       setWeatherNotice(res.explanation || res.scenario_description)
 
-      // Refresh shipment routes
       const refreshed = await getShipment(id)
       setShipment(refreshed)
 
-      // Re-run evaluation under the weather scenario
       const evalData = await evaluateRoutes({
         shipment_id: id,
         preference: activePreference,
@@ -206,7 +190,6 @@ export default function ShipmentAnalysis() {
     }
   }
 
-  // Planner review submission
   const handleReviewSubmit = async (e) => {
     e.preventDefault()
     try {
@@ -219,7 +202,6 @@ export default function ShipmentAnalysis() {
         decision_note: decisionNote,
       })
       setReviewSuccess(`Decision successfully recorded as ${decision.toUpperCase()}!`)
-      // Refresh shipment status
       const refreshed = await getShipment(id)
       setShipment(refreshed)
     } catch (err) {
@@ -230,7 +212,6 @@ export default function ShipmentAnalysis() {
     }
   }
 
-  // Collect map markers and route polylines
   const mapData = useMemo(() => {
     const ports = new Map()
     const polylines = []
@@ -254,17 +235,17 @@ export default function ShipmentAnalysis() {
       })
 
       if (coords.length > 1) {
-        let color = '#475569' // Default slate
+        let color = '#475569'
         let weight = 2
         let dashArray = '4, 4'
 
         if (isSelected) {
-          color = '#0284c7' // Blue
+          color = '#0284c7'
           weight = 4
           dashArray = null
         }
         if (isRecommended) {
-          color = '#10b981' // Emerald
+          color = '#10b981'
           weight = 5
           dashArray = null
         }
@@ -288,7 +269,6 @@ export default function ShipmentAnalysis() {
     }
   }, [shipment, selectedRouteId, evaluationResult])
 
-  // Multi-factor score breakdown data for Recharts
   const scoreChartData = useMemo(() => {
     return (evaluationResult?.score_breakdowns || []).map((sb) => {
       const fullRoute = (shipment?.routes || []).find((r) => r.id === sb.route_id)
@@ -336,7 +316,6 @@ export default function ShipmentAnalysis() {
 
   return (
     <div className="max-w-7xl mx-auto w-full p-6 space-y-6">
-      {/* Breadcrumb & Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <Link
@@ -383,7 +362,6 @@ export default function ShipmentAnalysis() {
           </div>
         </div>
 
-        {/* Weather Scenario Quick Switcher */}
         <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800">
           <span className="text-xs text-slate-400 px-2 font-medium">Weather:</span>
           {['normal', 'moderate_storm', 'severe_weather'].map((scen) => (
@@ -407,7 +385,6 @@ export default function ShipmentAnalysis() {
         </div>
       </div>
 
-      {/* Weather Alert if applied */}
       {weatherNotice && (
         <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-3.5 text-xs text-amber-200 flex items-start gap-2.5">
           <span className="text-base">🌪️</span>
@@ -418,7 +395,6 @@ export default function ShipmentAnalysis() {
         </div>
       )}
 
-      {/* AI Recommendation Highlight Box */}
       {recommendedRoute && (
         <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-blue-950/40 border border-emerald-500/30 rounded-xl p-5 shadow-lg shadow-emerald-950/10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -474,9 +450,7 @@ export default function ShipmentAnalysis() {
         </div>
       )}
 
-      {/* Grid: Interactive Map + Route Comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Leaflet Map Card */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col h-[460px]">
           <div className="flex items-center justify-between mb-2">
             <div>
@@ -556,7 +530,6 @@ export default function ShipmentAnalysis() {
           </div>
         </div>
 
-        {/* Route Comparison Table Card */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -643,7 +616,6 @@ export default function ShipmentAnalysis() {
         </div>
       </div>
 
-      {/* Route Multi-Factor Score Breakdown Chart */}
       {scoreChartData.length > 0 && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
@@ -700,7 +672,6 @@ export default function ShipmentAnalysis() {
         </div>
       )}
 
-      {/* Planner Controls: Preference Presets, Sliders & Constraints */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
           <div>
@@ -710,7 +681,6 @@ export default function ShipmentAnalysis() {
             </p>
           </div>
 
-          {/* Preset Buttons */}
           <div className="flex items-center gap-2">
             {Object.entries(PREFERENCE_PRESETS).map(([key, item]) => (
               <button
@@ -728,7 +698,6 @@ export default function ShipmentAnalysis() {
           </div>
         </div>
 
-        {/* Sliders Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
           {[
             { key: 'cost', label: 'Cost Weight' },
@@ -755,7 +724,6 @@ export default function ShipmentAnalysis() {
             </div>
           ))}
 
-          {/* Hard Constraints Box */}
           <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 space-y-2">
             <span className="text-slate-400 font-medium block">Hard Constraints</span>
             <div className="flex items-center gap-2">
@@ -791,7 +759,6 @@ export default function ShipmentAnalysis() {
           </div>
         </div>
 
-        {/* Evaluation Action Bar */}
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2 text-xs">
             <span
@@ -815,7 +782,6 @@ export default function ShipmentAnalysis() {
         </div>
       </div>
 
-      {/* Decision Review & Audit Trail Submission */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
         <h2 className="text-base font-bold text-white">Planner Decision &amp; Audit Trail</h2>
         <p className="text-xs text-slate-400">
@@ -874,7 +840,6 @@ export default function ShipmentAnalysis() {
           </div>
         </form>
 
-        {/* Recorded Review History */}
         {(shipment.reviews || []).length > 0 && (
           <div className="pt-3 border-t border-slate-800 space-y-2">
             <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">

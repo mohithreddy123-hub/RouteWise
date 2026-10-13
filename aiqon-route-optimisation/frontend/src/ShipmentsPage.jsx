@@ -21,7 +21,6 @@ export default function ShipmentsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Filters & Search
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [priorityFilter, setPriorityFilter] = useState('ALL')
@@ -29,7 +28,6 @@ export default function ShipmentsPage() {
   const [sortBy, setSortBy] = useState('id')
   const [sortOrder, setSortOrder] = useState('asc')
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
 
@@ -56,7 +54,6 @@ export default function ShipmentsPage() {
     loadData()
   }, [])
 
-  // Filter & sort logic
   const filteredShipments = useMemo(() => {
     return shipments
       .filter((s) => {
@@ -98,14 +95,12 @@ export default function ShipmentsPage() {
       })
   }, [shipments, search, statusFilter, priorityFilter, riskFilter, sortBy, sortOrder])
 
-  // Paginated items
   const totalPages = Math.ceil(filteredShipments.length / itemsPerPage) || 1
   const paginatedShipments = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage
     return filteredShipments.slice(start, start + itemsPerPage)
   }, [filteredShipments, currentPage])
 
-  // Functional CSV Export
   const handleExportCSV = () => {
     if (filteredShipments.length === 0) return
 
@@ -156,7 +151,6 @@ export default function ShipmentsPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 xl:p-6 space-y-5 bg-[#070b14] text-slate-100">
-      {/* Page Title & KPI Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -188,7 +182,6 @@ export default function ShipmentsPage() {
         </div>
       </div>
 
-      {/* KPI Stats Ribbon */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-xl p-3.5 shadow-sm">
           <div className="text-[11px] text-slate-400 font-medium">Total Shipments</div>
@@ -223,10 +216,8 @@ export default function ShipmentsPage() {
         </div>
       </div>
 
-      {/* Search & Filter Controls Toolbar */}
       <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-          {/* Search Box */}
           <div className="relative flex-1">
             <MagnifyingGlassIcon className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -241,7 +232,6 @@ export default function ShipmentsPage() {
             />
           </div>
 
-          {/* Filter Dropdowns */}
           <div className="flex flex-wrap items-center gap-2">
             <select
               value={statusFilter}

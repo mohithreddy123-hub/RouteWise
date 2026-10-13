@@ -14,7 +14,6 @@ import {
 import { getWeatherStatus, reassessWeather, getShipments } from './api'
 import { PREFERENCE_PRESETS } from './utils'
 
-
 export default function WeatherScenariosPage() {
   const [scenarioMeta, setScenarioMeta] = useState(null)
   const [activeScenario, setActiveScenario] = useState('normal')
@@ -95,7 +94,6 @@ export default function WeatherScenariosPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 xl:p-6 space-y-5 bg-[#070b14] text-slate-100">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -107,7 +105,6 @@ export default function WeatherScenariosPage() {
           </p>
         </div>
 
-        {/* Corridor / Shipment Context Selector */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400 font-medium">Corridor Context:</span>
           <select
@@ -124,7 +121,6 @@ export default function WeatherScenariosPage() {
         </div>
       </div>
 
-      {/* Demonstration Notice */}
       <div className="bg-slate-900/60 border border-amber-500/30 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-300">
         <InformationCircleIcon className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <div>
@@ -132,7 +128,6 @@ export default function WeatherScenariosPage() {
         </div>
       </div>
 
-      {/* Scenario Selection Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         {scenarioCards.map((scen) => {
           const Icon = scen.icon
@@ -142,11 +137,10 @@ export default function WeatherScenariosPage() {
             <div
               key={scen.id}
               onClick={() => runSimulation(scen.id, selectedShipmentId)}
-              className={`rounded-2xl p-4 border cursor-pointer transition-all ${
-                isSelected
+              className={`rounded-2xl p-4 border cursor-pointer transition-all ${isSelected
                   ? 'bg-blue-950/40 border-blue-500 shadow-lg shadow-blue-950/50 ring-1 ring-blue-500'
                   : 'bg-[#0B1120] border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/50'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center">
@@ -161,11 +155,10 @@ export default function WeatherScenariosPage() {
 
               <button
                 disabled={loading}
-                className={`w-full py-1.5 rounded-xl text-xs font-semibold transition ${
-                  isSelected
+                className={`w-full py-1.5 rounded-xl text-xs font-semibold transition ${isSelected
                     ? 'bg-blue-600 text-white'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 {isSelected ? '✓ Active Scenario' : 'Apply Scenario'}
               </button>
@@ -174,7 +167,6 @@ export default function WeatherScenariosPage() {
         })}
       </div>
 
-      {/* Simulation Results Analysis Area */}
       {simulationResult && (
         <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
@@ -193,18 +185,16 @@ export default function WeatherScenariosPage() {
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">Recommendation Status:</span>
               <span
-                className={`px-2 py-0.5 text-xs font-bold rounded-full border ${
-                  simulationResult.recommendation_changed
+                className={`px-2 py-0.5 text-xs font-bold rounded-full border ${simulationResult.recommendation_changed
                     ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                     : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                }`}
+                  }`}
               >
                 {simulationResult.recommendation_changed ? 'Recommendation Shifted' : 'Recommendation Stable'}
               </span>
             </div>
           </div>
 
-          {/* Explanation Narrative */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 leading-relaxed space-y-2">
             <div className="font-semibold text-white flex items-center gap-1.5">
               <ShieldExclamationIcon className="w-4 h-4 text-blue-400" />
@@ -216,7 +206,6 @@ export default function WeatherScenariosPage() {
             </p>
           </div>
 
-          {/* Route Options Comparison Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900/50 border-b border-slate-800 text-[11px] text-slate-400">
@@ -254,9 +243,8 @@ export default function WeatherScenariosPage() {
                       </td>
                       <td className="py-2.5 px-3">
                         <span
-                          className={`font-semibold ${
-                            (sb.raw_delay_prob || 0) > 25 ? 'text-rose-400' : 'text-emerald-400'
-                          }`}
+                          className={`font-semibold ${(sb.raw_delay_prob || 0) > 25 ? 'text-rose-400' : 'text-emerald-400'
+                            }`}
                         >
                           {sb.raw_delay_prob != null ? `${sb.raw_delay_prob}%` : '—'}
                         </span>
