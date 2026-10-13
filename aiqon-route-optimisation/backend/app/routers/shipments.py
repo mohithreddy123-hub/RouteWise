@@ -1,5 +1,3 @@
-"""Shipments router."""
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
@@ -120,7 +118,6 @@ def list_shipments(
 
     result = []
     for s in shipments:
-        # Compute highest route risk for risk_level filter
         max_risk = "Low"
         for r in s.routes:
             overall = compute_overall_risk({
@@ -166,7 +163,6 @@ def list_shipments(
 
 @router.get("/stats", response_model=dict)
 def get_stats(db: Session = Depends(get_db)):
-    """Dashboard KPI statistics."""
     shipments = db.query(models.Shipment).options(
         joinedload(models.Shipment.routes)
     ).all()
@@ -191,7 +187,6 @@ def get_stats(db: Session = Depends(get_db)):
 
     avg_delay = round(sum(all_delays) / len(all_delays), 1) if all_delays else 0.0
 
-    # Risk distribution
     risk_dist = {"Low": 0, "Moderate": 0, "High": 0}
     for s in shipments:
         for r in s.routes:

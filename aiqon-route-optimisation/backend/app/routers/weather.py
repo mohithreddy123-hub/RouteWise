@@ -1,5 +1,3 @@
-"""Weather reassessment router."""
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 
@@ -36,7 +34,6 @@ def _route_orm_to_dict(route: models.RouteOption) -> dict:
 
 @router.post("/reassess", response_model=dict)
 def reassess_weather(request: WeatherReassessRequest, db: Session = Depends(get_db)):
-    """Apply a simulated weather scenario and recalculate route recommendations."""
     shipment = db.query(models.Shipment).options(
         joinedload(models.Shipment.routes)
     ).filter(models.Shipment.id == request.shipment_id).first()
@@ -49,12 +46,10 @@ def reassess_weather(request: WeatherReassessRequest, db: Session = Depends(get_
 
     original_routes = [_route_orm_to_dict(r) for r in shipment.routes]
 
-    # Apply weather scenario to a deep copy — originals never modified
     modified_routes, affected_ids = weather_service.apply_weather_scenario(
         original_routes, request.scenario
     )
 
-    # Get original recommendation (normal conditions)
     original_result = recommendation_service.evaluate_recommendation(
         shipment_id=request.shipment_id,
         weights=request.weights,
@@ -69,7 +64,6 @@ def reassess_weather(request: WeatherReassessRequest, db: Session = Depends(get_
         else None
     )
 
-    # Get new recommendation under weather scenario
     new_result = recommendation_service.evaluate_recommendation(
         shipment_id=request.shipment_id,
         weights=request.weights,
@@ -113,7 +107,6 @@ def reassess_weather(request: WeatherReassessRequest, db: Session = Depends(get_
 
 @router.get("/status", response_model=dict)
 def weather_status():
-    """Return available weather scenarios and their descriptions."""
     return {
         "available_scenarios": [
             {

@@ -17,13 +17,10 @@ DATA_DISCLAIMER = (
     "risk scores, and route options are illustrative and not verified commercial data."
 )
 
-
 @router.get("/ml-status", response_model=dict)
 def get_ml_status():
     """Return scikit-learn ML delay predictor metadata, metrics, and data disclosure."""
     return delay_predictor.get_status()
-
-
 
 @router.post("/evaluate", response_model=dict)
 def evaluate(request: RecommendationRequest, db: Session = Depends(get_db)):
@@ -39,7 +36,6 @@ def evaluate(request: RecommendationRequest, db: Session = Depends(get_db)):
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
 
-    # Persist evaluation
     eval_record = models.RecommendationEvaluation(
         id=str(uuid.uuid4()),
         shipment_id=request.shipment_id,
@@ -55,7 +51,6 @@ def evaluate(request: RecommendationRequest, db: Session = Depends(get_db)):
     db.commit()
 
     return {**result, "data_disclaimer": DATA_DISCLAIMER}
-
 
 @router.post("/planner-review", response_model=dict)
 def submit_planner_review(
