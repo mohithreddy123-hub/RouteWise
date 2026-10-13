@@ -25,7 +25,6 @@ export async function getShipmentStats() {
   return response.data
 }
 
-// Optimization & Recommendation Engine API
 export async function evaluateRoutes(payload) {
   const response = await client.post('/recommendations/evaluate', payload)
   return response.data
@@ -38,7 +37,6 @@ export async function submitPlannerReview({ shipment_id, decision, selected_rout
   return response.data
 }
 
-// Weather Simulation API
 export async function reassessWeather(payload) {
   const response = await client.post('/weather/reassess', payload)
   return response.data
@@ -49,13 +47,11 @@ export async function getWeatherStatus() {
   return response.data
 }
 
-// Data Sources & Transparency API
 export async function getDataSources() {
   const response = await client.get('/data-sources')
   return response.data
 }
 
-// GenAI Logistics Assistant API
 export async function getAssistantStatus() {
   const response = await client.get('/assistant/status')
   return response.data
