@@ -15,8 +15,6 @@ import numpy as np
 
 from app.schemas import WeightsSchema, ConstraintsSchema
 
-# ─── Weight presets per preference ───────────────────────────────────────────
-
 PREFERENCE_WEIGHTS: Dict[str, Dict[str, float]] = {
     "balanced": {
         "cost": 28, "transit_time": 22, "delay_probability": 18,
@@ -140,12 +138,10 @@ def filter_routes(routes: List[dict], constraints: ConstraintsSchema) -> tuple:
     for route in routes:
         reasons = []
 
-        # Check missing critical fields
         missing = check_missing_critical_fields(route)
         if missing:
             reasons.append(f"Missing critical data fields: {', '.join(missing)}")
 
-        # Max cost
         if constraints.max_cost_usd is not None:
             cost = route.get("estimated_cost_usd")
             if cost is None or cost > constraints.max_cost_usd:
@@ -154,7 +150,6 @@ def filter_routes(routes: List[dict], constraints: ConstraintsSchema) -> tuple:
                     if cost else "Cost unknown, cannot verify max cost constraint"
                 )
 
-        # Max transit days
         if constraints.max_transit_days is not None:
             days = route.get("estimated_transit_days")
             if days is None or days > constraints.max_transit_days:
@@ -163,7 +158,6 @@ def filter_routes(routes: List[dict], constraints: ConstraintsSchema) -> tuple:
                     if days else "Transit days unknown, cannot verify constraint"
                 )
 
-        # Constrained capacity
         if constraints.exclude_constrained_capacity:
             cap = (route.get("capacity_status") or "").lower()
             if cap in ("constrained", "full"):
@@ -187,7 +181,6 @@ def score_routes(
     if not routes:
         return []
 
-    # Extract raw values
     costs = [r.get("estimated_cost_usd") for r in routes]
     transits = [r.get("estimated_transit_days") for r in routes]
     delays = [r.get("delay_probability_percent") for r in routes]
@@ -196,7 +189,6 @@ def score_routes(
     weathers = [r.get("weather_risk") for r in routes]
     carbons = [r.get("carbon_estimate_kg") for r in routes]
 
-    # Normalise each dimension (lower = better for all metrics)
     norm_cost = _normalise_lower_better(costs)
     norm_transit = _normalise_lower_better(transits)
     norm_delay = _normalise_lower_better(delays)
@@ -211,7 +203,6 @@ def score_routes(
 
     breakdowns = []
     for i, route in enumerate(routes):
-        # Overall risk
         overall = compute_overall_risk(route)
 
         def ws(norm_val, weight_key):
@@ -247,7 +238,6 @@ def score_routes(
             "overall_risk_label": overall_risk_label(overall),
         })
 
-    # Rank by total_score descending
     breakdowns.sort(key=lambda x: x["total_score"], reverse=True)
     for rank, bd in enumerate(breakdowns, 1):
         bd["rank"] = rank

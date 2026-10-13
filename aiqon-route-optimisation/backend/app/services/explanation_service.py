@@ -42,7 +42,6 @@ def generate_recommendation_explanation(
     All values come from actual computed scores.
     """
 
-    # Build a lookup: route_id -> breakdown
     bd_map: Dict[str, dict] = {bd["route_id"]: bd for bd in score_breakdowns}
 
     lines = []
@@ -91,7 +90,6 @@ def generate_recommendation_explanation(
         f"Overall risk is rated {rec_risk_label}."
     )
 
-    # Compare with alternatives
     others = [r for r in eligible_routes if r["id"] != rec_id]
     if others:
         comparisons = []
@@ -101,7 +99,6 @@ def generate_recommendation_explanation(
 
             reasons = []
 
-            # Cost comparison
             rec_cost = recommended.get("estimated_cost_usd")
             oth_cost = other.get("estimated_cost_usd")
             if rec_cost is not None and oth_cost is not None:
@@ -110,7 +107,6 @@ def generate_recommendation_explanation(
                 elif oth_cost > rec_cost:
                     reasons.append(f"higher cost ({_fmt_cost(oth_cost)} vs {_fmt_cost(rec_cost)})")
 
-            # Transit comparison
             rec_days = recommended.get("estimated_transit_days")
             oth_days = other.get("estimated_transit_days")
             if rec_days is not None and oth_days is not None:
@@ -119,7 +115,6 @@ def generate_recommendation_explanation(
                 elif oth_days < rec_days:
                     reasons.append(f"shorter transit ({_fmt_days(oth_days)} vs {_fmt_days(rec_days)})")
 
-            # Risk comparison
             oth_risk_label = obd.get("overall_risk_label", "")
             if oth_risk_label and oth_risk_label != rec_risk_label:
                 reasons.append(f"{oth_risk_label.lower()} overall risk")
@@ -137,13 +132,11 @@ def generate_recommendation_explanation(
         lines.append("Comparison with other eligible routes:")
         lines.extend(comparisons)
 
-    # Excluded routes
     if excluded_routes:
         lines.append("The following routes were excluded by constraints:")
         for ex in excluded_routes:
             lines.append(f"• {ex['route']['route_name']}: {ex['reason']}")
 
-    # Constraints applied
     active_constraints = []
     if constraints.get("max_cost_usd") is not None:
         active_constraints.append(f"maximum cost ${constraints['max_cost_usd']:,.0f}")

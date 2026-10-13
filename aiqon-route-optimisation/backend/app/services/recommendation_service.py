@@ -10,7 +10,6 @@ from app.schemas import WeightsSchema, ConstraintsSchema
 from app.services import scoring_service, explanation_service
 from app.services.ml_delay_service import delay_predictor
 
-
 def _route_to_dict(route: models.RouteOption) -> dict:
     """Convert ORM RouteOption to plain dict for scoring."""
     return {
@@ -32,7 +31,6 @@ def _route_to_dict(route: models.RouteOption) -> dict:
         "risk_events": route.risk_events or [],
         "weather_zone": route.weather_zone,
     }
-
 
 def evaluate_recommendation(
     shipment_id: str,
@@ -73,7 +71,6 @@ def evaluate_recommendation(
 
     score_breakdowns = scoring_service.score_routes(eligible, effective_weights)
 
-    # Attach ML delay forecast to score breakdowns
     for bd in score_breakdowns:
         matching = next((r for r in eligible if r["id"] == bd["route_id"]), None)
         if matching:
@@ -81,7 +78,6 @@ def evaluate_recommendation(
             bd["ml_predicted_delay_prob"] = ml_pred["ml_predicted_delay_prob"]
             bd["ml_risk_category"] = ml_pred["ml_risk_category"]
 
-    # Build recommended route dict
     recommended_dict = None
     if score_breakdowns:
         top_id = score_breakdowns[0]["route_id"]
@@ -99,7 +95,6 @@ def evaluate_recommendation(
                 }
                 break
 
-    # Enrich eligible routes with scores and ML predictions
     bd_map = {bd["route_id"]: bd for bd in score_breakdowns}
     enriched_eligible = []
     for r in eligible:
