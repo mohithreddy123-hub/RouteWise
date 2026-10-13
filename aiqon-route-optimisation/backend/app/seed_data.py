@@ -1,11 +1,5 @@
-"""
-Database seeder — loads synthetic ports and shipments from JSON files.
-Safe to run repeatedly: checks existence before inserting.
-"""
-
 import json
 import os
-import uuid
 from sqlalchemy.orm import Session
 from app import models
 
@@ -19,7 +13,6 @@ def _load_json(filename: str) -> list:
 
 
 def seed_ports(db: Session) -> int:
-    """Seed ports. Returns count inserted."""
     ports_data = _load_json("ports.json")
     inserted = 0
     for p in ports_data:
@@ -33,7 +26,6 @@ def seed_ports(db: Session) -> int:
 
 
 def seed_shipments(db: Session) -> int:
-    """Seed shipments and their routes/legs. Returns count inserted."""
     shipments_data = _load_json("shipments_seed.json")
     inserted = 0
 
@@ -70,14 +62,12 @@ def seed_shipments(db: Session) -> int:
 
 
 def seed_all(db: Session) -> dict:
-    """Run all seeders. Returns summary."""
     ports_n = seed_ports(db)
     ships_n = seed_shipments(db)
     return {"ports_inserted": ports_n, "shipments_inserted": ships_n}
 
 
 def reset_db(db: Session) -> None:
-    """Delete all seeded data (for testing / reset). Does NOT drop tables."""
     db.query(models.RouteLeg).delete()
     db.query(models.RouteOption).delete()
     db.query(models.PlannerReview).delete()

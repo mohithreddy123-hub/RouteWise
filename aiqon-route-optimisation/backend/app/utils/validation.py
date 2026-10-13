@@ -1,5 +1,3 @@
-"""Input validation utilities."""
-
 from typing import Optional
 from fastapi import HTTPException
 
