@@ -60,7 +60,6 @@ export default function Dashboard() {
 
   const safeShipments = Array.isArray(shipments) ? shipments : []
 
-  // Fallback / seed items matching reference image
   const displayShipments = useMemo(() => {
     if (safeShipments.length >= 5) {
       return safeShipments.slice(0, 5)
@@ -114,7 +113,6 @@ export default function Dashboard() {
     ]
   }, [safeShipments])
 
-  // Route recommendations matching reference image
   const recommendations = [
     {
       id: 'RTE-001-A',
@@ -145,7 +143,6 @@ export default function Dashboard() {
     },
   ]
 
-  // Scatter plot data for Cost vs Transit Time
   const scatterData = [
     { cost: 2850, transit: 16, color: '#38bdf8' },
     { cost: 3400, transit: 19, color: '#38bdf8' },
@@ -158,14 +155,12 @@ export default function Dashboard() {
     { cost: 9500, transit: 28, color: '#38bdf8' },
   ]
 
-  // Donut chart data for Delay Risk Distribution
   const riskDonutData = [
     { name: 'Low Risk', value: 58, color: '#22c55e' },
     { name: 'Medium Risk', value: 29, color: '#eab308' },
     { name: 'High Risk', value: 12, color: '#ef4444' },
   ]
 
-  // Regional shipment breakdown
   const regionalData = [
     { region: 'Asia', count: 8, fill: '#0284c7' },
     { region: 'Europe', count: 5, fill: '#0d9488' },
@@ -195,9 +190,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex-1 flex overflow-hidden w-full h-full bg-[#070b14]">
-      {/* Central Scrollable Dashboard */}
       <div className="flex-1 overflow-y-auto p-4 xl:p-5 space-y-4">
-        {/* Error Alert */}
         {error && (
           <div className="bg-rose-950/70 border border-rose-600/40 text-rose-200 px-4 py-2.5 rounded-xl text-xs flex items-center justify-between">
             <span>{error}</span>
@@ -210,9 +203,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* 4 Top KPI Cards (Matching exact design reference) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {/* Card 1: Active Shipments */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
             <div>
               <div className="text-xs text-slate-400 font-medium">Active Shipments</div>
@@ -232,7 +223,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 2: Route Variants */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
             <div>
               <div className="text-xs text-slate-400 font-medium">Route Variants</div>
@@ -252,7 +242,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 3: Global Ports */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
             <div>
               <div className="text-xs text-slate-400 font-medium">Global Ports</div>
@@ -268,7 +257,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 4: At Risk Shipments */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-700 transition flex items-start justify-between">
             <div>
               <div className="text-xs text-slate-400 font-medium">At Risk Shipments</div>
@@ -289,12 +277,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Central World Map Section */}
         <DashboardMap />
 
-        {/* Middle Row: Recent Shipments & Route Recommendations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-          {/* Recent Shipments Card */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-white tracking-wide">
@@ -361,7 +346,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Route Recommendations Card */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-white tracking-wide">
@@ -417,9 +401,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bottom Section: 3 Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-          {/* Card 1: Cost vs Transit Time Scatter */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
             <h3 className="text-xs font-semibold text-white mb-2">
               Cost vs Transit Time
@@ -468,7 +450,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 2: Delay Risk Distribution Donut */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
             <h3 className="text-xs font-semibold text-white mb-1">
               Delay Risk Distribution
@@ -492,14 +473,12 @@ export default function Dashboard() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                {/* Center text matching reference */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-sm font-bold text-white leading-none">24</span>
                   <span className="text-[9px] text-slate-400 leading-tight">Shipments</span>
                 </div>
               </div>
 
-              {/* Donut Legend on right */}
               <div className="space-y-1.5 text-xs pr-2">
                 {riskDonutData.map((item) => (
                   <div key={item.name} className="flex items-center gap-2">
@@ -517,7 +496,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 3: Shipments by Region Bar Chart */}
           <div className="bg-[#0B1120] border border-slate-800/80 rounded-2xl p-4 shadow-sm">
             <h3 className="text-xs font-semibold text-white mb-2">
               Shipments by Region
@@ -559,7 +537,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Right AI Logistics Assistant Panel (Matching reference image) */}
       <AIAssistantPanel activeShipmentId={null} />
     </div>
   )

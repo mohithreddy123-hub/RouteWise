@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { MapContainer, TileLayer, Polyline, CircleMarker, Circle, Popup, ZoomControl } from 'react-leaflet'
 
-// Key hub ports shown in the reference image
 const HUBS = [
   { id: 'NLRTM', name: 'Rotterdam (NLRTM)', lat: 51.9225, lon: 4.4792, type: 'major' },
   { id: 'CNSHA', name: 'Shanghai (CNSHA)', lat: 31.2304, lon: 121.4737, type: 'major' },
@@ -13,55 +12,53 @@ const HUBS = [
   { id: 'USNYC', name: 'New York (USNYC)', lat: 40.684, lon: -74.045, type: 'major' },
 ]
 
-// Prominent trade routes connecting hubs matching the reference image
 const ROUTES = [
   {
     id: 'route-rotterdam-shanghai',
     name: 'Rotterdam → Shanghai (Suez Corridor)',
-    color: '#38bdf8', // bright cyan/blue
+    color: '#38bdf8',
     dashArray: '6, 6',
     coords: [
       [51.9225, 4.4792],
-      [36.0, -5.3],     // Gibraltar
-      [32.0, 31.5],     // Suez Canal
-      [12.5, 43.5],     // Bab el Mandeb
-      [6.0, 78.0],      // South Sri Lanka
-      [1.26, 103.82],   // Singapore
-      [14.0, 114.0],    // South China Sea
-      [31.23, 121.47],  // Shanghai
+      [36.0, -5.3],
+      [32.0, 31.5],
+      [12.5, 43.5],
+      [6.0, 78.0],
+      [1.26, 103.82],
+      [14.0, 114.0],
+      [31.23, 121.47],
     ],
   },
   {
     id: 'route-shanghai-singapore-hyderabad',
     name: 'Shanghai → Singapore → Hyderabad',
-    color: '#eab308', // amber/yellow
+    color: '#eab308',
     dashArray: '4, 4',
     coords: [
-      [31.23, 121.47],  // Shanghai
-      [22.2, 114.1],    // Hong Kong
-      [1.26, 103.82],   // Singapore
-      [5.8, 95.0],      // Malacca strait out
-      [13.08, 80.27],   // Chennai
-      [17.385, 78.4867],// Hyderabad
+      [31.23, 121.47],
+      [22.2, 114.1],
+      [1.26, 103.82],
+      [5.8, 95.0],
+      [13.08, 80.27],
+      [17.385, 78.4867],
     ],
   },
   {
     id: 'route-active-singapore-europe',
     name: 'Active Freight Corridor (Southern Arc)',
-    color: '#22c55e', // green
+    color: '#22c55e',
     dashArray: '8, 6',
     coords: [
-      [1.26, 103.82],   // Singapore
-      [-5.0, 80.0],     // Equatorial Indian Ocean
-      [-20.0, 50.0],    // South Indian Ocean
-      [-34.0, 20.0],    // Cape of Good Hope
-      [10.0, -20.0],    // Mid Atlantic
-      [51.9225, 4.4792],// Rotterdam
+      [1.26, 103.82],
+      [-5.0, 80.0],
+      [-20.0, 50.0],
+      [-34.0, 20.0],
+      [10.0, -20.0],
+      [51.9225, 4.4792],
     ],
   },
 ]
 
-// Weather risk zones matching cyclones/storms in the reference image
 const WEATHER_RISKS = [
   {
     id: 'cyclone-bob',
@@ -111,7 +108,6 @@ export default function DashboardMap() {
 
   return (
     <div className="relative w-full h-[370px] rounded-2xl overflow-hidden border border-slate-800/80 bg-[#090d16] shadow-xl">
-      {/* Floating Layer Controls (Top-Left matching reference) */}
       <div className="absolute top-3 left-3 z-[1000] bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl p-2.5 text-xs shadow-2xl text-slate-200 flex flex-col gap-1.5 min-w-[190px]">
         <label className="flex items-center gap-2 cursor-pointer hover:text-white select-none">
           <input
@@ -169,7 +165,6 @@ export default function DashboardMap() {
         </div>
       </div>
 
-      {/* Leaflet Map Container */}
       <MapContainer
         center={[24, 75]}
         zoom={2}
@@ -185,7 +180,6 @@ export default function DashboardMap() {
           url={tileUrl}
         />
 
-        {/* Shipping Routes */}
         {showRoutes &&
           ROUTES.map((route) => (
             <Polyline
@@ -204,11 +198,9 @@ export default function DashboardMap() {
             </Polyline>
           ))}
 
-        {/* Weather Risk Storm Zones (Circular radar waves) */}
         {showWeather &&
           WEATHER_RISKS.map((risk) => (
             <React.Fragment key={risk.id}>
-              {/* Outer faint storm halo */}
               <Circle
                 center={risk.center}
                 radius={risk.radiusMeters}
@@ -220,7 +212,6 @@ export default function DashboardMap() {
                   dashArray: '3, 4',
                 }}
               />
-              {/* Inner high-intensity storm eye */}
               <CircleMarker
                 center={risk.center}
                 radius={16}
@@ -244,7 +235,6 @@ export default function DashboardMap() {
             </React.Fragment>
           ))}
 
-        {/* Hub Port Markers */}
         {showPorts &&
           HUBS.map((port) => (
             <CircleMarker
@@ -267,7 +257,6 @@ export default function DashboardMap() {
             </CircleMarker>
           ))}
 
-        {/* Active In-Transit Vessel Markers */}
         {showActiveShipments && (
           <>
             <CircleMarker

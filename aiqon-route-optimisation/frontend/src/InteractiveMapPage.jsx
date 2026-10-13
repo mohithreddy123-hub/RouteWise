@@ -22,7 +22,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { getPorts, getShipments } from './api'
 
-// Subcomponent to animate and fly map to selected coordinates
 function MapFlyTo({ target }) {
   const map = useMap()
   useEffect(() => {
@@ -178,7 +177,6 @@ export default function InteractiveMapPage() {
   const [selectedPort, setSelectedPort] = useState(null)
   const [flyTarget, setFlyTarget] = useState(null)
 
-  // Layer switches
   const [showRoutes, setShowRoutes] = useState(true)
   const [showPorts, setShowPorts] = useState(true)
   const [showWeather, setShowWeather] = useState(true)
@@ -228,7 +226,6 @@ export default function InteractiveMapPage() {
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row h-full overflow-hidden bg-[#070b14] text-slate-100">
-      {/* Left / Bottom Tactical Controls Panel */}
       <div className="w-full lg:w-80 xl:w-96 bg-[#0B1120] border-r border-slate-800/80 flex flex-col h-auto lg:h-full shrink-0 shadow-2xl z-10 overflow-y-auto">
         <div className="p-4 border-b border-slate-800/80">
           <div className="flex items-center justify-between">
@@ -249,7 +246,6 @@ export default function InteractiveMapPage() {
           </p>
         </div>
 
-        {/* Port Search & Explorer */}
         <div className="p-3 border-b border-slate-800/80 space-y-2">
           <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Global Port Hubs (35)</span>
@@ -287,7 +283,6 @@ export default function InteractiveMapPage() {
           </div>
         </div>
 
-        {/* Selected Port Inspection Card */}
         {selectedPort && (
           <div className="p-3 bg-blue-950/30 border-b border-blue-900/40 space-y-1.5">
             <div className="flex items-center justify-between">
@@ -311,7 +306,6 @@ export default function InteractiveMapPage() {
           </div>
         )}
 
-        {/* Active In-Transit Vessels */}
         <div className="p-3 border-b border-slate-800/80 space-y-2">
           <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Vessels in Transit (3)</span>
@@ -348,7 +342,6 @@ export default function InteractiveMapPage() {
           </div>
         </div>
 
-        {/* Storm Radar Zones */}
         <div className="p-3 space-y-2">
           <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Severe Weather Alerts</span>
@@ -379,9 +372,7 @@ export default function InteractiveMapPage() {
         </div>
       </div>
 
-      {/* Main Full-Size Leaflet Map Area */}
       <div className="flex-1 relative h-full min-h-[450px]">
-        {/* Floating Layer Controls (Top-Left) */}
         <div className="absolute top-4 left-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-3 shadow-2xl text-slate-200 flex flex-col gap-2 min-w-[200px]">
           <div className="text-[11px] font-bold text-white uppercase tracking-wider pb-1 border-b border-slate-800">
             Map Overlays
@@ -443,7 +434,6 @@ export default function InteractiveMapPage() {
           </div>
         </div>
 
-        {/* Map Container */}
         <MapContainer
           center={[20, 70]}
           zoom={3}
