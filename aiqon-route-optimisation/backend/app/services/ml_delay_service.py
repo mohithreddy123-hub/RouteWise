@@ -138,7 +138,6 @@ class DelayPredictor:
             ),
         }
 
-        # Save artifacts
         os.makedirs(MODEL_DIR, exist_ok=True)
         joblib.dump(self.model, MODEL_FILE)
         with open(METRICS_FILE, "w", encoding="utf-8") as f:
@@ -179,7 +178,6 @@ class DelayPredictor:
         feats = self._extract_features_from_dict(route_data)
         X = pd.DataFrame([feats], columns=FEATURE_NAMES)
         pred_val = float(self.model.predict(X)[0])
-        # Bound between 0% and 100%
         pred_val = max(0.0, min(100.0, round(pred_val, 1)))
 
         risk_category = "Low"
@@ -208,5 +206,4 @@ class DelayPredictor:
         }
 
 
-# Singleton instance
 delay_predictor = DelayPredictor()

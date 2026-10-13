@@ -1,7 +1,3 @@
-"""
-FastAPI Router for RouteWise GenAI Logistics Assistant.
-"""
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
@@ -35,13 +31,11 @@ class ChatResponse(BaseModel):
 
 @router.get("/status", response_model=dict)
 def get_status():
-    """Return GenAI assistant configuration and active tools status."""
     return assistant_service.get_assistant_status()
 
 
 @router.get("/suggested-prompts", response_model=List[str])
 def get_suggested_prompts():
-    """Return default suggested questions matching RouteWise design reference."""
     return [
         "Find the best route from Shanghai to Hyderabad",
         "Why was Route A recommended?",
@@ -52,10 +46,6 @@ def get_suggested_prompts():
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest, db: Session = Depends(get_db)):
-    """
-    Send prompt to RouteWise GenAI Logistics Assistant.
-    Executes approved backend tools and returns real data with recommendations.
-    """
     history_dicts = [{"role": m.role, "content": m.content} for m in (request.conversation_history or [])]
     result = assistant_service.chat_with_assistant(
         message=request.message,

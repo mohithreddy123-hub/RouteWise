@@ -9,45 +9,35 @@ so different routes experience different impacts.
 from copy import deepcopy
 from typing import List, Dict, Any, Tuple
 
-# ─── Weather Scenario Definitions ────────────────────────────────────────────
-# Each scenario maps weather_zone → deltas applied to route metrics.
-# Deltas are additive for risk scores and delay probability.
-
 WEATHER_SCENARIOS: Dict[str, Dict[str, Dict[str, float]]] = {
-    "normal": {},  # No changes
+    "normal": {},
 
     "moderate_storm": {
-        # South China Sea storm
         "South China Sea": {
             "weather_risk_delta": +25,
             "delay_probability_delta": +12,
             "transit_days_delta": +2,
         },
-        # Bay of Bengal moderate disruption
         "Bay of Bengal": {
             "weather_risk_delta": +18,
             "delay_probability_delta": +8,
             "transit_days_delta": +1,
         },
-        # Arabian Sea minor swell
         "Arabian Sea": {
             "weather_risk_delta": +10,
             "delay_probability_delta": +5,
             "transit_days_delta": 0,
         },
-        # Red Sea unchanged
         "Red Sea": {
             "weather_risk_delta": +5,
             "delay_probability_delta": +3,
             "transit_days_delta": 0,
         },
-        # Pacific mild disruption
         "Pacific": {
             "weather_risk_delta": +12,
             "delay_probability_delta": +6,
             "transit_days_delta": +1,
         },
-        # Cape Route — stronger effect
         "Cape Route": {
             "weather_risk_delta": +20,
             "delay_probability_delta": +10,
@@ -76,37 +66,31 @@ WEATHER_SCENARIOS: Dict[str, Dict[str, Dict[str, float]]] = {
     },
 
     "severe_weather": {
-        # South China Sea typhoon
         "South China Sea": {
             "weather_risk_delta": +50,
             "delay_probability_delta": +30,
             "transit_days_delta": +5,
         },
-        # Bay of Bengal cyclone
         "Bay of Bengal": {
             "weather_risk_delta": +45,
             "delay_probability_delta": +25,
             "transit_days_delta": +4,
         },
-        # Arabian Sea storm
         "Arabian Sea": {
             "weather_risk_delta": +30,
             "delay_probability_delta": +18,
             "transit_days_delta": +3,
         },
-        # Red Sea unchanged (weather not primary concern)
         "Red Sea": {
             "weather_risk_delta": +10,
             "delay_probability_delta": +5,
             "transit_days_delta": 0,
         },
-        # Pacific severe
         "Pacific": {
             "weather_risk_delta": +35,
             "delay_probability_delta": +20,
             "transit_days_delta": +4,
         },
-        # Cape Route — severe southern storms
         "Cape Route": {
             "weather_risk_delta": +45,
             "delay_probability_delta": +28,
@@ -141,10 +125,8 @@ SCENARIO_LABELS = {
     "severe_weather": "Severe Weather Disruption",
 }
 
-
 def _clamp(value: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, value))
-
 
 def apply_weather_scenario(
     routes: List[dict],
@@ -179,12 +161,9 @@ def apply_weather_scenario(
 
     return modified, affected_ids
 
-
 def _safe_float(v, default: float = 0.0) -> float:
     if v is None:
         return default
     return float(v)
-
-
 def get_scenario_label(scenario: str) -> str:
     return SCENARIO_LABELS.get(scenario, scenario)
