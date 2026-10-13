@@ -1,9 +1,3 @@
-"""
-Integration tests for MySQL database support and fallback safety.
-Tests schema creation, relationships, idempotent seeding, audit records,
-and fallback resilience.
-"""
-
 import os
 import urllib.parse
 import pytest
@@ -14,8 +8,6 @@ from app import models
 from app.database import _build_engine
 from app.seed_data import seed_all
 
-
-# Check if local MySQL test server is accessible
 MYSQL_PWD = os.getenv("MYSQL_TEST_PASSWORD", "Root!@#$%12345")
 MYSQL_USER = os.getenv("MYSQL_TEST_USER", "root")
 MYSQL_HOST = os.getenv("MYSQL_TEST_HOST", "127.0.0.1")
@@ -40,7 +32,6 @@ MYSQL_AVAILABLE = is_mysql_available()
 
 @pytest.mark.skipif(not MYSQL_AVAILABLE, reason="Local MySQL server not available")
 def test_mysql_table_creation():
-    """Verify all 6 core tables are successfully created in MySQL."""
     engine = _build_engine(MYSQL_TEST_URL)
     models.Base.metadata.create_all(bind=engine)
     
@@ -59,21 +50,17 @@ def test_mysql_table_creation():
 
 @pytest.mark.skipif(not MYSQL_AVAILABLE, reason="Local MySQL server not available")
 def test_mysql_seeding_and_idempotency():
-    """Verify data is seeded into MySQL and re-running does not produce duplicate records."""
     engine = _build_engine(MYSQL_TEST_URL)
     Session = sessionmaker(bind=engine)
     db = Session()
     try:
-        # First seed run
         res1 = seed_all(db)
         assert isinstance(res1, dict)
         
-        # Second seed run must insert 0 duplicates
         res2 = seed_all(db)
         assert res2["ports_inserted"] == 0
         assert res2["shipments_inserted"] == 0
 
-        # Verify expected counts
         ports_count = db.query(models.Port).count()
         shipments_count = db.query(models.Shipment).count()
         routes_count = db.query(models.RouteOption).count()
@@ -89,7 +76,6 @@ def test_mysql_seeding_and_idempotency():
 
 @pytest.mark.skipif(not MYSQL_AVAILABLE, reason="Local MySQL server not available")
 def test_mysql_relationships_and_audit():
-    """Verify relationships and inserting/querying a PlannerReview record on MySQL."""
     engine = _build_engine(MYSQL_TEST_URL)
     Session = sessionmaker(bind=engine)
     db = Session()
@@ -100,7 +86,6 @@ def test_mysql_relationships_and_audit():
         assert shipment.destination is not None
         assert len(shipment.routes) >= 2
 
-        # Add a test review
         test_review = models.PlannerReview(
             id="REV-TEST-MYSQL-001",
             shipment_id=shipment.id,
@@ -108,18 +93,15 @@ def test_mysql_relationships_and_audit():
             selected_route_id=shipment.routes[0].id,
             decision_note="MySQL integration test review",
         )
-        # Clean up any previous test review
         db.query(models.PlannerReview).filter_by(id="REV-TEST-MYSQL-001").delete()
         db.add(test_review)
         db.commit()
 
-        # Query back
         persisted = db.query(models.PlannerReview).filter_by(id="REV-TEST-MYSQL-001").first()
         assert persisted is not None
         assert persisted.decision == "approved"
         assert persisted.selected_route_id == shipment.routes[0].id
 
-        # Clean up
         db.delete(persisted)
         db.commit()
     finally:
@@ -127,9 +109,7 @@ def test_mysql_relationships_and_audit():
 
 
 def test_sqlite_fallback_on_unreachable_db():
-    """Verify that if an unreachable host is provided, building engine does not crash."""
     invalid_url = "mysql+pymysql://invalid_user:invalid_pass@127.0.0.1:9999/nonexistent_db"
-    # Testing that fallback logic works cleanly
     try:
         engine = _build_engine(invalid_url)
         with engine.connect():
@@ -138,5 +118,4 @@ def test_sqlite_fallback_on_unreachable_db():
     except Exception:
         connected = False
 
-    # Should not connect to port 9999
     assert connected is False
