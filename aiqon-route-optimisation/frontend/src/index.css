@@ -19,7 +19,6 @@
   }
 }
 
-/* Custom scrollbar for data tables and panels */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -38,7 +37,6 @@
   background: rgba(71, 85, 105, 1);
 }
 
-/* Leaflet dark/tactical map overrides */
 .leaflet-container {
   width: 100%;
   height: 100%;

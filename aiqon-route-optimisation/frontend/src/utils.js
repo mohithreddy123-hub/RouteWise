@@ -1,4 +1,3 @@
-// Display formatters
 export function formatCurrency(value) {
   if (value === null || value === undefined) return 'N/A'
   return new Intl.NumberFormat('en-US', {
@@ -28,7 +27,6 @@ export function formatScore(value) {
   return Number(value).toFixed(2)
 }
 
-// Risk styling helpers
 export function getRiskBadgeClass(level) {
   const normalized = (level || '').toLowerCase()
   if (normalized.includes('low')) {
@@ -51,7 +49,6 @@ export function getRiskColorHex(level) {
   return '#94a3b8'
 }
 
-// Default optimization weight presets
 export const PREFERENCE_PRESETS = {
   balanced: {
     label: 'Balanced',

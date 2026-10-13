@@ -64,7 +64,6 @@ function LeftSidebar() {
 
   return (
     <aside className="w-56 xl:w-60 shrink-0 bg-[#0B1120] border-r border-slate-800/80 flex flex-col justify-between p-4 h-full select-none z-30">
-      {/* RouteWise Branding matching reference image */}
       <div>
         <Link to="/" className="flex items-center gap-3 mb-6 px-1 group">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-bold text-base group-hover:scale-105 transition-transform">
@@ -82,7 +81,6 @@ function LeftSidebar() {
           </div>
         </Link>
 
-        {/* Navigation Links */}
         <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -111,9 +109,7 @@ function LeftSidebar() {
         </nav>
       </div>
 
-      {/* Bottom Promo Card matching reference image */}
       <div className="mt-auto bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800/80 rounded-2xl p-3.5 relative overflow-hidden shadow-lg">
-        {/* Glowing Holographic Globe */}
         <div className="w-full h-20 rounded-xl bg-gradient-to-tr from-blue-900/40 via-cyan-900/20 to-blue-600/20 flex items-center justify-center relative overflow-hidden mb-2.5 border border-blue-500/10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent animate-pulse" />
           <svg
@@ -152,7 +148,6 @@ function TopHeader() {
   const [allShipments, setAllShipments] = useState([])
   const [allPorts, setAllPorts] = useState([])
 
-  // Notifications State
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState([
     {
@@ -181,13 +176,9 @@ function TopHeader() {
     },
   ])
 
-  // Profile Popover State
   const [profileOpen, setProfileOpen] = useState(false)
-
-  // Theme State
   const [themeDark, setThemeDark] = useState(true)
 
-  // Load shipments & ports for global search
   useEffect(() => {
     async function loadSearchData() {
       try {
@@ -204,7 +195,6 @@ function TopHeader() {
     loadSearchData()
   }, [])
 
-  // Filter search results
   useEffect(() => {
     const q = searchTerm.trim().toLowerCase()
     if (!q) {
@@ -259,7 +249,6 @@ function TopHeader() {
 
   return (
     <header className="h-14 shrink-0 bg-[#0B1120] border-b border-slate-800/80 px-5 flex items-center justify-between relative z-40">
-      {/* Global Search Input with Dynamic Live Dropdown */}
       <div className="relative w-80 max-w-md">
         <MagnifyingGlassIcon className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
         <input
@@ -279,7 +268,6 @@ function TopHeader() {
           </button>
         )}
 
-        {/* Global Search Results Dropdown */}
         {searchFocused && searchTerm && searchResults.length > 0 && (
           <div className="absolute left-0 right-0 top-full mt-1.5 bg-[#0B1120] border border-slate-700/80 rounded-xl shadow-2xl overflow-hidden py-1 z-50">
             <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
@@ -306,9 +294,7 @@ function TopHeader() {
         )}
       </div>
 
-      {/* Right Controls: Theme, Notifications, Planner Profile */}
       <div className="flex items-center gap-3">
-        {/* Theme Toggle Button */}
         <button
           onClick={() => setThemeDark(!themeDark)}
           title="Toggle Tactical Theme"
@@ -317,7 +303,6 @@ function TopHeader() {
           {themeDark ? <SunIcon className="w-4 h-4 text-amber-400" /> : <MoonIcon className="w-4 h-4 text-cyan-400" />}
         </button>
 
-        {/* Bell Notifications with Red Badge */}
         <div className="relative">
           <button
             onClick={() => {
@@ -335,7 +320,6 @@ function TopHeader() {
             )}
           </button>
 
-          {/* Notifications Dropdown Popover */}
           {notificationsOpen && (
             <div className="absolute right-0 top-full mt-2 w-80 bg-[#0B1120] border border-slate-700/80 rounded-2xl shadow-2xl p-3 z-50 space-y-2">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -385,7 +369,6 @@ function TopHeader() {
           )}
         </div>
 
-        {/* User Profile Pill: PL Planner */}
         <div className="relative">
           <button
             onClick={() => {
@@ -403,7 +386,6 @@ function TopHeader() {
             <ChevronDownIcon className="w-3 h-3 text-slate-500" />
           </button>
 
-          {/* Profile Menu Popover */}
           {profileOpen && (
             <div className="absolute right-0 top-full mt-2 w-64 bg-[#0B1120] border border-slate-700/80 rounded-2xl shadow-2xl p-3 z-50 space-y-2 text-xs">
               <div className="border-b border-slate-800 pb-2">
@@ -452,15 +434,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="flex h-screen bg-[#070b14] text-slate-100 overflow-hidden font-sans">
-        {/* Left Navigation Sidebar */}
         <LeftSidebar />
 
-        {/* Main Work Area */}
         <div className="flex-1 flex flex-col h-full overflow-hidden">
-          {/* Top Header Bar */}
           <TopHeader />
 
-          {/* Active Route Workspace */}
           <main className="flex-1 flex overflow-hidden">
             <Routes>
               <Route path="/" element={<Dashboard />} />
